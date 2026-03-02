@@ -1,115 +1,23 @@
-\section{L4: Naive Bayes, Vectors, SGNS, A1 Repro}
+\section{L4 Naive Bayes + Embeddings}
 \subsection*{Multinomial Naive Bayes}
-MAP classifier:
-\[
-\hat c_{MAP}=\arg\max_{c\in C}P(c\mid x).
-\]
-\[
-\hat c_{MAP}=\arg\max_{c\in C}P(c)P(x\mid c).
-\]
-Multinomial likelihood for bag-of-words counts $x_i$:
-\[
-P(x\mid c)=\frac{n!}{\prod_{i=1}^{|V|}x_i!}
-\prod_{i=1}^{|V|}\theta_{c,i}^{x_i},
-\]
-\[
-n=\sum_i x_i.
-\]
-Log-space decision rule:
-\[
-\hat c=\arg\max_{c\in C}
-\left[\log P(c)+\sum_{i=1}^{|V|}x_i\log\theta_{c,i}\right].
-\]
-MLE and add-$\alpha$ smoothing:
-\[
-\theta_{c,i}^{MLE}=\frac{n_{i,c}}{n_c},
-\qquad
-\theta_{c,i}=\frac{n_{i,c}+\alpha}{n_c+\alpha|V|}.
-\]
+MAP: $\hat c=\arg\max_{c\in C}P(c\mid x)=\arg\max_{c\in C}P(c)P(x\mid c)$.\\
+Likelihood for bag-of-words counts $x_i$: $P(x\mid c)=\dfrac{n!}{\prod_{i=1}^{|V|}x_i!}\prod_{i=1}^{|V|}\theta_{c,i}^{x_i}$, $n=\sum_i x_i$.\\
+Log-score: $\hat c=\arg\max_c\left[\log P(c)+\sum_{i=1}^{|V|}x_i\log\theta_{c,i}\right]$.\\
+Smoothing: $\theta_{c,i}=\dfrac{n_{i,c}+\alpha}{n_c+\alpha|V|}$ (MLE is $\alpha=0$).
 
-\subsection*{Word Vectors and Similarity}
-Dot product:
-\[
-a\cdot b=\sum_i a_i b_i.
-\]
-Norm and cosine:
-\[
-\|a\|=\sqrt{\sum_i a_i^2},
-\qquad
-\cos(a,b)=\frac{a\cdot b}{\|a\|\|b\|}.
-\]
-Use cosine when vector length/frequency bias is undesirable.
+\subsection*{Word Vectors}
+Dot product: $a\cdot b=\sum_i a_ib_i$; norm: $\|a\|=\sqrt{\sum_i a_i^2}$; cosine: $\cos(a,b)=\dfrac{a\cdot b}{\|a\|\|b\|}$.\\
+Small context window tends to syntactic neighbors; larger window tends to topical neighbors.
 
-\subsection*{Window Size and Neighbor Type (L4)}
-Small context window ($C=\pm2$): nearest neighbors are often syntactic/taxonomic.\\
-Large context window ($C=\pm5$): neighbors shift toward topical/semantic field relations.\\
-Lecture example (Hogwarts): small window gives fictional-school neighbors; large window gives Harry-Potter-world terms.
+\subsection*{Analogy Rule}
+For $a:a^*::b:b^*$, $v(b^*)\approx v(b)-v(a)+v(a^*)$.\\
+Works better for some relation types than others (frequency and semantic stability matter).
 
-\subsection*{Analogy by Parallelogram}
-For $a:a^{*} :: b:b^{*}$,\\
-$v(b^{*}) \approx v(b)-v(a)+v(a^{*})$.\\
-Canonical examples: $v(king)-v(man)+v(woman)\approx v(queen)$;\\
-$v(Paris)-v(France)+v(Italy)\approx v(Rome)$.
-- Caveat (L4 slide): not universal; works better for some relation types than others.\\
-- Caveat (L4 slide): performance depends on frequent words and stable semantics.
+\subsection*{SGNS Core}
+$P(+\mid w,c)=\sigma(u_c\cdot v_w)$, $P(-\mid w,c)=\sigma(-u_c\cdot v_w)$.\\
+One positive + $k$ negatives CE term: $L=-\left[\log\sigma(u_{c^+}\cdot v_w)+\sum_{i=1}^{k}\log\sigma(-u_{c_i^-}\cdot v_w)\right]$.\\
+Useful derivatives: $\dfrac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha)$, $\dfrac{d}{d\alpha}\log\sigma(-\alpha)=-\sigma(\alpha)$.
 
-\subsection*{Embedding Bias Notes}
-Slides emphasize: embeddings reflect statistical regularities and cultural bias in training data.\\
-Example template: father:doctor::mother:$x$ may return stereotyped completions.\\
-Downstream retrieval/ranking/classification systems can inherit these biases if embeddings are used directly.
-
-\subsection*{SGNS Core (lecture form)}
-For target word $w$ and context word $c$:
-\[
-P(+\mid w,c)=\sigma(u_c\cdot v_w).
-\]
-\[
-P(-\mid w,c)=\sigma(-u_c\cdot v_w).
-\]
-Two sets of embeddings in training: word vectors $v_w$ and context vectors $u_c$; final embedding often uses $v_w$ (or $v_w+u_w$).\\
-One positive + $k$ negatives objective:
-\[
-\begin{array}{l}
-L_{CE}= -\Big[
-\log\sigma(u_{c^+}\cdot v_w)\\
-\quad +\sum_{i=1}^{k}\log\sigma(-u_{c_i^-}\cdot v_w)
-\Big].
-\end{array}
-\]
-Useful derivatives:
-\[
-\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha).
-\]
-\[
-\frac{d}{d\alpha}\log\sigma(-\alpha)=-\sigma(\alpha).
-\]
-
-\subsection*{A1 Repro (exam-speed chain)}
-\textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) C, (e) C.\\
-\textbf{Q2(a)} add-one bigram:
-\[
-P(Sam\mid am)=
-\frac{C(am,Sam)+1}{C(am)+|V|}
-\]
-\[
-P(Sam\mid am)=\frac{2+1}{3+11}=\frac{3}{14}.
-\]
-\textbf{Q2(b)} interpolation ($\lambda_1=\lambda_2=\frac{1}{2}$):
-\[
-P(Sam\mid am)=
-\frac{1}{2}\cdot\frac{2}{3}
-+\frac{1}{2}\cdot\frac{4}{25}
-=\frac{31}{75}.
-\]
-\textbf{Q3} No EOS modeling:
-\[
-\sum_{w_{1:\ell}}P(w_{1:\ell})=1\ \text{for each fixed }\ell,
-\]
-not a valid global distribution across all lengths.\\
-\textbf{Q4} NB derivation path: Bayes $\rightarrow$ drop class-independent terms $\rightarrow$ log-linear score.\\
-\textbf{Q5} Logistic objective and gradient: same CE and gradient forms as L3.
-
-\subsection*{L4 Pitfalls}
-- Compute NB in log space to avoid underflow.\\
-- Without smoothing, one unseen word can zero a class score.\\
-- Dot product alone can over-favor frequent words; cosine is safer.
+\subsection*{A1 Reminders}
+Q2(a) $P(Sam\mid am)=\dfrac{3}{14}$, Q2(b) interpolation gives $\dfrac{31}{75}$.\\
+NB implementation should use log space; without smoothing, one unseen word can zero a class score.

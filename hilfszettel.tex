@@ -8,8 +8,8 @@
 \usepackage{amsmath,amssymb}
 \usepackage{tikz}
 \usetikzlibrary{shapes,positioning,arrows,fit,calc,graphs,graphs.standard}
-\usepackage[nosf]{kpfonts}
-\usepackage[t1]{sourcesanspro}
+\IfFileExists{kpfonts.sty}{\usepackage[nosf]{kpfonts}}{\usepackage{lmodern}}
+\IfFileExists{sourcesanspro.sty}{\usepackage[t1]{sourcesanspro}}{\usepackage[scaled=.92]{helvet}}
 \usepackage{multicol}
 \usepackage{wrapfig}
 \usepackage[top=4mm,bottom=4mm,left=4mm,right=4mm]{geometry}
@@ -19,11 +19,11 @@
 
 \let\bar\overline
 
-\include{inhalt/def}
+\input{inhalt/def}
 
 \begin{document}
 \footnotesize
-\begin{multicols}{5}
+\begin{multicols}{2}
 \input{inhalt/aussagen}
 \input{inhalt/mengen}
 \input{inhalt/relationen}

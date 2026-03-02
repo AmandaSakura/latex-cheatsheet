@@ -1,67 +1,24 @@
-\section{L1 Foundations: Tokens, Unicode, BPE, Regex}
-\subsection*{Token Basics}
-Type: unique element in vocabulary $V$; size $|V|$.\\
-Token (instance): one occurrence in corpus; total count $N$.\\
-Lecture example sentence ``They ... stars'': 14 types, 16 instances (ignore punctuation).\\
-Orthographic vs grammatical word can differ: ``I'm'' is one orthographic token but two words ($I$ + $am$).\\
-Heaps/Herdan law (lecture statement):
-\[
-|V|\approx KN^{\beta},\qquad \beta\approx 0.5.
-\]
-Type-token ratio $|V|/N$ decreases as corpus grows.
+\section{L1 Foundations}
+\subsection*{Token / Type / Morphology}
+Type: unique vocabulary item in $V$; token: one occurrence; TTR $=|V|/N$.\\
+Heaps/Herdan law: $|V|\approx KN^{\beta},\ \beta\approx 0.5$ (type growth slows as corpus grows).\\
+Morpheme: minimal meaning unit; root + affix; inflection vs derivation.\\
+Orthographic token and grammatical word may differ (e.g., \texttt{I'm}).
 
-\subsection*{Language and Token Budget}
-Whitespace tokenization is language-dependent; not universal.\\
-For Chinese/Japanese/Thai, segmentation choices change token count strongly.\\
-Chinese lecture point: words are built from hanzi; each character can correspond to a morpheme.\\
-Chinese segmentation is not uniquely agreed: same utterance can have multiple valid word segmentations.\\
-Practical exam note: same sentence meaning can consume very different token budgets across tokenizers/languages.
+\subsection*{Unicode and UTF-8}
+Unicode maps symbols to code points (e.g., \texttt{a}=U+0061); code point $\neq$ glyph.\\
+UTF-8 patterns: 1-byte $0xxxxxxx$, 2-byte $110xxxxx\ 10xxxxxx$, 3-byte $1110xxxx\ 10xxxxxx\ 10xxxxxx$, 4-byte $11110xxx\ 10xxxxxx\ 10xxxxxx\ 10xxxxxx$.\\
+ASCII stays 1 byte in UTF-8; Python 3 \texttt{len()} counts code points, not bytes.
 
-\subsection*{L1 Morphology and ``What is a Word''}
-Morpheme: minimal meaning-bearing unit in a language.\\
-Examples from slides: ``fox'' = one morpheme; ``cats'' = $cat + {-s}$.\\
-Root vs affix: root carries core meaning; affix adds grammatical/semantic function.\\
-Inflectional morphemes: mostly grammatical (e.g., verb past \texttt{-ed}, noun plural \texttt{-s/-es}).\\
-Derivational morphemes: often change lexical class/meaning (e.g., care $\rightarrow$ careful $\rightarrow$ carefully).\\
-Clitic: syntactically word-like but phonologically reduced and attached (e.g., \texttt{'ve} in \texttt{I've}).
+\subsection*{BPE Essentials}
+Train ($k$ merges): frequent pair $(A,B)\to AB$, add to $V$, replace all $A\ B$.\\
+Encode: start from chars/bytes, then apply learned merges in learned order (greedy).\\
+Byte-level BPE uses 256-byte alphabet and avoids byte-level OOV.
 
-\subsection*{Unicode, Code Points, UTF-8}
-Unicode maps symbols to code points (e.g., \texttt{a}=U+0061).\\
-Code point is not glyph; rendering belongs to font + shaping.\\
-UTF-8 is variable length and ASCII-compatible:
-\[
-\begin{array}{l}
-\text{1-byte: }0xxxxxxx,\\
-\text{2-byte: }110xxxxx\ 10xxxxxx,\\
-\text{3-byte: }1110xxxx\ 10xxxxxx\ 10xxxxxx,\\
-\text{4-byte: }11110xxx\ 10xxxxxx\\
-\text{\phantom{4-byte: }}10xxxxxx\ 10xxxxxx.
-\end{array}
-\]
-ASCII (first 127 code points) uses 1 byte in UTF-8.\\
-Python 3 strings are Unicode code points; \texttt{len()} counts code points (not bytes).
+\subsection*{Regex Quick Sheet}
+Classes \verb|[A-Z]|, \verb|[^0-9]|; quantifiers \verb|* + ? {m,n}|; anchors \verb|^ $ \b|.\\
+Groups \verb|(...)| / \verb|(?:...)|; lookahead \verb|(?=...)| / \verb|(?!...)|; substitution via \texttt{re.sub()}.
 
-\subsection*{BPE (Byte Pair Encoding)}
-Train-time learner (repeat for $k$ merges):
-1. Find most frequent adjacent pair $(A,B)$.\\
-2. Add merged token $AB$ to $V$.\\
-3. Replace each $A\ B$ by $AB$.\\
-Test-time encoder: start from chars/bytes.\\
-Apply learned merges greedily in learned order.\\
-Byte-level BPE uses alphabet size 256 (all bytes), avoiding byte-level OOV.
-
-\subsection*{Regex Essentials (Tokenization/Cleanup)}
-Character classes: \verb|[abc]|, \verb|[A-Z]|, \verb|[^0-9]|.\\
-Quantifiers: \verb|*| (0+), \verb|+| (1+), \verb|?| (0/1), \verb|{m,n}|.\\
-Anchors: \verb|^|, \verb|$|, boundary \verb|\b|, wildcard \verb|.|.\\
-Grouping: capturing \verb|(...)|, non-capturing \verb|(?:...)|.\\
-Lookahead: positive \verb|(?=...)|, negative \verb|(?!...)|.\\
-Substitution API: \texttt{re.sub(...)}.\\
-Capture-group reorder: group2 then group1.
-
-\subsection*{L1 Pitfalls}
-- Code switching: mixing languages in one utterance; important because segmentation/token counts can shift abruptly.\\
-- Corpus datasheets: structured dataset documentation; important for understanding coverage, bias, and intended use.\\
-- Sentence boundary ambiguity: period can be abbreviation or EOS.\\
-- Tokenizer mismatch invalidates direct perplexity/model comparison.\\
-- Mixing byte-level and code-point operations causes silent bugs.
+\subsection*{L1 Reminders}
+Tokenizer choice (especially CJK segmentation) strongly changes token budget.\\
+Perplexity comparison is valid only under same tokenizer, preprocessing, and test split.

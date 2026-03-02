@@ -15,7 +15,7 @@
 \everymath\expandafter{\the\everymath \color{myblue}}
 \everydisplay\expandafter{\the\everydisplay \color{myblue}}
 
-\renewcommand{\baselinestretch}{.8}
+\renewcommand{\baselinestretch}{.78}
 \pagestyle{empty}
 
 \global\mdfdefinestyle{header}{%
@@ -34,24 +34,25 @@ Page~\thepage~of~2
 
 \makeatletter
 \renewcommand{\section}{\@startsection{section}{1}{0mm}%
-                                {.1ex}%
-                                {.1ex}%
+                                {.06ex}%
+                                {.06ex}%
                                 {\color{myblue}\sffamily\small\bfseries\raggedright}}
 \renewcommand{\subsection}{\@startsection{subsection}{1}{0mm}%
-                                {.1ex}%
-                                {.1ex}%
+                                {.04ex}%
+                                {.04ex}%
                                 {\sffamily\bfseries}}
 \makeatother
+\renewcommand{\thesection}{}
 \setcounter{secnumdepth}{0}
 
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.06ex}
-\setlength{\abovedisplayskip}{0.4pt}
-\setlength{\belowdisplayskip}{0.4pt}
+\setlength{\parskip}{0.03ex}
+\setlength{\abovedisplayskip}{0.3pt}
+\setlength{\belowdisplayskip}{0.3pt}
 \setlength{\abovedisplayshortskip}{0.2pt}
 \setlength{\belowdisplayshortskip}{0.2pt}
 \setlength{\jot}{0.5pt}
 \setlength{\mathindent}{0pt}
 \setlength{\columnsep}{0.9mm}
-\setlength{\multicolsep}{0.5pt}
+\setlength{\multicolsep}{0.2pt}
 \emergencystretch=2em
