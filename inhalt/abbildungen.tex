@@ -1,4 +1,4 @@
-\section{L4: Naive Bayes, Vectors, SGNS, A1 Repro}
+\section{L4: Naive Bayes, Vectors, SGNS}
 \subsection*{Multinomial Naive Bayes}
 \[
 \hat c_{MAP}=\arg\max_{c\in C}P(c\mid x).
@@ -79,20 +79,32 @@ L_{CE}= -\left[\log\sigma(s^+)+\sum_{i=1}^{k}\log\sigma(-s_i^-)\right].
 \frac{d}{d\alpha}\log\sigma(-\alpha)=-\sigma(\alpha).
 \]
 
-\subsection*{A1 Repro (exam-speed chain)}
-\textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) C, (e) C.\\
-\textbf{Q2(a)} add-one bigram: $P(Sam\mid am)=\dfrac{C(am,Sam)+1}{C(am)+|V|}=\dfrac{3}{14}$.\\
-\textbf{Q2(b)} interpolation:
+\subsection*{MCQ Transfer Rules (no raw answer keys)}
+If option mixes ranking with probability values in NB, prefer log-score form\\
+$\log P(c)+\sum_i x_i\log\theta_{c,i}$ (same argmax, safer numerically).\\
+For similarity questions: use cosine when vector norms/frequency should be removed;\\
+dot product keeps magnitude bias.\\
+For SGNS signs: positive pair uses $\log\sigma(+u_c\cdot v_w)$;\\
+negative sample uses $\log\sigma(-u_{c^-}\cdot v_w)$.\\
+Window-size questions: small window $\Rightarrow$ syntactic neighbors,\\
+large window $\Rightarrow$ topical/semantic neighbors.\\
+Analogy rule is approximate, not universal; expect reliability differences by relation type.
+
+\subsection*{A1-style Formula Transfer}
+Add-one bigram:
 \[
-P(Sam\mid am)=\frac{1}{2}\cdot\frac{2}{3}+\frac{1}{2}\cdot\frac{4}{25}=\frac{31}{75}.
+P_{add1}(w_i\mid w_{i-1})=\frac{C(w_{i-1},w_i)+1}{C(w_{i-1})+|V|}.
 \]
-\textbf{Q3} no EOS: for fixed $\ell$,\\
+Interpolation template:
 \[
-\sum_{w_{1:\ell}}P(w_{1:\ell})=1,
+P(w_i\mid h)=\lambda_1P_1+\lambda_2P_2,\qquad \lambda_1+\lambda_2=1.
 \]
-but not a valid global distribution across lengths.\\
-\textbf{Q4} NB derivation: Bayes $\to$ drop class-independent terms $\to$ log-linear score.\\
-\textbf{Q5} logistic objective/gradient are same CE forms as L3.
+No-EOS caveat:
+\[
+\sum_{w_{1:\ell}}P(w_{1:\ell})=1\ \text{for fixed }\ell.
+\]
+Not globally normalized across all lengths.
+NB derivation path: Bayes $\to$ drop class-independent terms $\to$ log-linear score.
 
 \subsection*{L4 Pitfalls}
 - Compute NB in log space to avoid underflow.\\

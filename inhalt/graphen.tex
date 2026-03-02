@@ -1,4 +1,4 @@
-\section{L5+L6: Neural Nets, Transformer, LLM, A2 Repro}
+\section{L5+L6: Neural Nets, Transformer, LLM}
 \subsection*{Feedforward Neural LM / Classifier}
 Neural unit: $z=w\cdot x+b$, $a=f(z)$.\\
 Activations:
@@ -91,6 +91,21 @@ Quality/diversity tradeoff: flatter sampling increases diversity and lowers aver
 Top-$k$: keep $k$ highest-probability tokens, renormalize, then sample; $k=1$ is greedy.\\
 Top-$p$ (nucleus): choose smallest set $S$ with $\sum_{w\in S}p(w)\ge p$, renormalize on $S$, sample.
 
+\subsection*{Softmax + CE Quick Facts}
+\[
+y=\mathrm{softmax}(z).
+\]
+\[
+y_i=\frac{e^{z_i}}{\sum_j e^{z_j}}.
+\]
+\[
+L_{CE}(y,t)=-\sum_i t_i\log y_i.
+\]
+\[
+\nabla_z L_{CE}=y-t.
+\]
+Temperature effect: $z/\tau$ with $\tau\downarrow$ sharper, $\tau\uparrow$ flatter.
+
 \subsection*{Transformer Attention (canonical)}
 Input encoding (decoder LM):
 \[
@@ -128,6 +143,32 @@ a_i=(head_i^1\oplus\cdots\oplus head_i^h)W^O.
 \]
 Self-attention complexity (seq length $n$): time $O(n^2d)$, memory $O(n^2)$.
 
+\subsection*{Causal Mask + LM Objective}
+Causal (look-ahead) mask forbids attending to future positions:
+\[
+\alpha_{ij}=0\ \text{for}\ j>i.
+\]
+\[
+\alpha_{ij}\propto \exp(score_{ij})\ \text{for}\ j\le i.
+\]
+Decoder LM training objective:
+\[
+L_{LM}=-\sum_{t=1}^{T}\log P(w_t\mid w_{<t}).
+\]
+Perplexity relation (same tokenizer/setup):
+\[
+PP=\exp\!\left(\frac{1}{T}L_{LM}\right).
+\]
+
+\subsection*{Sinusoidal Positional Encoding (if asked)}
+\[
+PE(pos,2i)=\sin\!\left(\frac{pos}{10000^{2i/d}}\right).
+\]
+\[
+PE(pos,2i+1)=\cos\!\left(\frac{pos}{10000^{2i/d}}\right).
+\]
+Input is commonly $x_i^0=E[w_i]+PE_i$.
+
 \subsection*{LayerNorm + Transformer Block (pre-norm)}
 \[
 \mu=\frac{1}{d}\sum_{r=1}^{d}x_r,
@@ -156,9 +197,8 @@ SFT: supervised instruction-response fine-tuning.\\
 Perplexity is tokenizer-sensitive; compare only under same tokenization and decoding setup.\\
 Safety checklist: hallucination, privacy leakage, toxicity, representation bias.
 
-\subsection*{A2 Repro (exam-speed chain)}
-\textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) D, (e) A.\\
-\textbf{Q2(a)} SGNS objective:
+\subsection*{A2-style Derivation Chain (transfer template)}
+\textbf{Step 1:} write SGNS objective in positive + expected negative form:
 \[
 \begin{aligned}
 J(\theta)={}&\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)\\
@@ -167,23 +207,34 @@ g(w,c')={}&\log\sigma(-u_{c'}\cdot v_w),\\
 &\max_\theta J(\theta).
 \end{aligned}
 \]
-Expanded expectation:
+\textbf{Step 2:} expand expectation over vocabulary:
 \[
 \begin{aligned}
 J(\theta)={}&\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)\\
 &+k\sum_{(w,\cdot)\in D}\sum_{c'\in V}P_n(c')g(w,c').
 \end{aligned}
 \]
-\textbf{Q2(b)} $\dfrac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha)=\dfrac{1}{1+e^{\alpha}}$.\\
-\textbf{Q2(c)} for one pair ($\alpha=u_0\cdot v_1$):\\
+\textbf{Step 3:} core derivative:
+\[
+\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha)=\frac{1}{1+e^{\alpha}}.
+\]
+\textbf{Step 4:} stationary point for one pair ($\alpha=u_0\cdot v_1$):
 \[
 \alpha^*=\log\dfrac{A}{B}.
 \]
-\textbf{Q2(d)} with negative sampling:
+\textbf{Step 5:} with unigram negative sampling:
 \[
 \alpha^*=PMI(1,0)-\log k.
 \]
-\textbf{Q2(e)} choose $0<\beta<1$ in $P_n(w)\propto P_{unigram}(w)^\beta$; common choice $\beta=0.75$.
+\textbf{Step 6:} choose $0<\beta<1$ in $P_n(w)\propto P_{unigram}(w)^\beta$; common choice $\beta=0.75$.
+
+\subsection*{MCQ Transfer Triggers (L5/L6)}
+If one option compares decoding quality/diversity, remember:\\
+greedy/top-$k$ small $\Rightarrow$ quality up, diversity down;\\
+temperature/top-$p$ larger $\Rightarrow$ diversity up.\\
+If one option ignores tokenizer differences in perplexity comparison, reject it.\\
+If one option allows future-token attention in decoder LM, reject it (breaks autoregressive setup).\\
+If one option claims attention cost is linear in sequence length, reject it for vanilla self-attention.
 
 \subsection*{L5/L6 Pitfalls}
 - Most backprop bugs are wrong shape or wrong chain path.\\
