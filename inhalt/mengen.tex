@@ -14,7 +14,8 @@ D(i,0)&=D(i-1,0)+del[x_i],\quad D(0,j)=D(0,j-1)+ins[y_j],\\
 D(i,j)&=\min\{D(i-1,j)+del[x_i],\ D(i,j-1)+ins[y_j],\ D(i-1,j-1)+sub[x_i,y_j]\}.
 \end{aligned}
 \]
-Backtrace stores DEL/INS/SUB-MATCH pointers. Complexity: time $O(MN)$, memory $O(MN)$ or $O(\min\{M,N\})$ (rolling rows).
+Backtrace stores DEL/INS/SUB-MATCH pointers.\\
+Complexity: time $O(MN)$, memory $O(MN)$ or $O(\min\{M,N\})$ (rolling rows).
 
 \subsection*{N-gram Language Modeling}
 \[
@@ -28,7 +29,8 @@ P(w_1\ldots w_n)&=\prod_{i=1}^{n}P(w_i\mid w_{i-1}),\quad w_0=\langle s\rangle.
 \]
 
 \subsection*{Train/Dev/Test Protocol (L2)}
-Train: fit parameters; Dev: tune model/hyperparameters; Test: one-shot final report. Never tune on test. Workflow: train $\to$ dev tune $\to$ freeze $\to$ test once.
+Train: fit parameters; Dev: tune model/hyperparameters; Test: one-shot final report.\\
+Never tune on test. Workflow: train $\to$ dev tune $\to$ freeze $\to$ test once.
 
 \subsection*{Perplexity (textbook canonical)}
 \[
@@ -37,10 +39,12 @@ PP(W)&=P(w_1\ldots w_N)^{-1/N}=\exp\!\left(-\frac{1}{N}\sum_{i=1}^{N}\log p_i\ri
 p_i&=P(w_i\mid w_1^{i-1}).
 \end{aligned}
 \]
-Interpretation: inverse normalized test probability (effective branching factor). Compare PP only under same tokenizer/preprocessing/test split.
+Interpretation: inverse normalized test probability (effective branching factor).\\
+Compare PP only under same tokenizer/preprocessing/test split.
 
 \subsection*{Shannon Visualization (1948)}
-Bigram generation sketch: sample $w\sim p(w\mid\langle s\rangle)$, then repeat $x\sim p(x\mid w)$, set $w\leftarrow x$, stop at $\langle/ s\rangle$.
+Bigram generation sketch: sample $w\sim p(w\mid\langle s\rangle)$,\\
+then repeat $x\sim p(x\mid w)$, set $w\leftarrow x$, stop at $\langle/ s\rangle$.
 
 \subsection*{Smoothing / Backoff / Interpolation}
 \[
@@ -52,11 +56,13 @@ P_{addk}(w_i\mid w_{i-1})&=\frac{C(w_{i-1},w_i)+k}{C(w_{i-1})+k|V|},\quad 0<k<1.
 Linear interpolation (trigram):
 \[
 \begin{aligned}
-P(w_i\mid w_{i-2},w_{i-1})={}&\lambda_3P_{ML}(w_i\mid w_{i-2},w_{i-1})+\lambda_2P_{ML}(w_i\mid w_{i-1})+\lambda_1P_{ML}(w_i),\\
+P(w_i\mid w_{i-2},w_{i-1})={}&\lambda_3P_{ML}(w_i\mid w_{i-2},w_{i-1})\\
+&+\lambda_2P_{ML}(w_i\mid w_{i-1})+\lambda_1P_{ML}(w_i),\\
 &\lambda_1+\lambda_2+\lambda_3=1.
 \end{aligned}
 \]
-Katz backoff: when higher-order count is zero, back off to lower order with discounting so mass stays normalized.\\
+Katz backoff: if higher-order count is zero, back off to lower order\\
+with discounting so mass stays normalized.\\
 Stupid backoff (lecture):
 \[
 S(w_i\mid h)=
@@ -70,7 +76,8 @@ where $h'$ is the shorter history; this is a scoring rule, not a true normalized
 \subsection*{A1 Repro (L2 core)}
 Q2(a) add-one bigram: $P(Sam\mid am)=\dfrac{C(am,Sam)+1}{C(am)+|V|}=\dfrac{3}{14}$.\\
 Q2(b) interpolation in assignment: $P(Sam\mid am)=\dfrac{31}{75}$.\\
-Q3 no EOS: for fixed length $\ell$, $\sum_{w_{1:\ell}}P(w_{1:\ell})=1$, but not a valid global distribution across all lengths.
+Q3 no EOS: for fixed length $\ell$, $\sum_{w_{1:\ell}}P(w_{1:\ell})=1$,\\
+but not a valid global distribution across all lengths.
 
 \subsection*{L2 Pitfalls}
 - Unsmoothed models assign zero probability to unseen n-grams.\\

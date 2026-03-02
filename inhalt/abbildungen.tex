@@ -11,41 +11,65 @@ Log-space score:
 \[
 \hat c=\arg\max_{c\in C}\left[\log P(c)+\sum_{i=1}^{|V|}x_i\log\theta_{c,i}\right].
 \]
-MLE/add-$\alpha$: $\theta_{c,i}^{MLE}=\dfrac{n_{i,c}}{n_c}$, $\theta_{c,i}=\dfrac{n_{i,c}+\alpha}{n_c+\alpha|V|}$.
+\[
+\theta_{c,i}^{MLE}=\dfrac{n_{i,c}}{n_c},\qquad
+\theta_{c,i}=\dfrac{n_{i,c}+\alpha}{n_c+\alpha|V|}.
+\]
 
 \subsection*{Binary NB vs Bernoulli NB (exam trap)}
-Binary NB (lecture variant): clip counts at 1, then use multinomial-style training with occurrence features.\\
+Binary NB (lecture variant): clip counts at 1,\\
+then use multinomial-style training with occurrence features.\\
 Bernoulli NB: models presence/absence explicitly per token dimension.\\
 Takeaway: both are "0/1-like", but not the same likelihood model.
 
 \subsection*{Word Vectors and Similarity}
-$a\cdot b=\sum_i a_i b_i$, $\|a\|=\sqrt{\sum_i a_i^2}$, $\cos(a,b)=\dfrac{a\cdot b}{\|a\|\|b\|}$. Use cosine when length/frequency bias is undesirable.
+\[
+a\cdot b=\sum_i a_i b_i,\qquad
+\|a\|=\sqrt{\sum_i a_i^2},\qquad
+\cos(a,b)=\dfrac{a\cdot b}{\|a\|\|b\|}.
+\]
+Use cosine when length/frequency bias is undesirable.
 
 \subsection*{Window Size and Neighbor Type (L4)}
-Small window ($C=\pm2$): neighbors tend to be syntactic/taxonomic. Large window ($C=\pm5$): neighbors become topical/semantic-field.
+Small window ($C=\pm2$): neighbors tend to be syntactic/taxonomic.\\
+Large window ($C=\pm5$): neighbors become topical/semantic-field.
 
 \subsection*{Analogy by Parallelogram}
-$v(b^\*)\approx v(b)-v(a)+v(a^\*)$. Canonical examples: $v(king)-v(man)+v(woman)\approx v(queen)$; $v(Paris)-v(France)+v(Italy)\approx v(Rome)$. Works better for some relation types than others.
+\[
+v(b^\*)\approx v(b)-v(a)+v(a^\*).
+\]
+Canonical examples: $v(king)-v(man)+v(woman)\approx v(queen)$;\\
+$v(Paris)-v(France)+v(Italy)\approx v(Rome)$.\\
+Works better for some relation types than others.
 
 \subsection*{Embedding Bias Notes}
-Embeddings reflect training statistics and social bias; downstream retrieval/ranking/classification can inherit this bias.
+Embeddings reflect training statistics and social bias;\\
+downstream retrieval/ranking/classification can inherit this bias.
 
 \subsection*{SGNS Core (lecture form)}
 \[
 P(+\mid w,c)=\sigma(u_c\cdot v_w),\qquad P(-\mid w,c)=\sigma(-u_c\cdot v_w).
 \]
-Training keeps word vectors $v_w$ and context vectors $u_c$; final representation often uses $v_w$ (or $v_w+u_w$).\\
+Training keeps word vectors $v_w$ and context vectors $u_c$.\\
+Final representation often uses $v_w$ (or $v_w+u_w$).\\
 One positive + $k$ negatives objective:
 \[
 L_{CE}= -\left[\log\sigma(u_{c^+}\cdot v_w)+\sum_{i=1}^{k}\log\sigma(-u_{c_i^-}\cdot v_w)\right].
 \]
-Useful derivatives: $\dfrac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha)$, $\dfrac{d}{d\alpha}\log\sigma(-\alpha)=-\sigma(\alpha)$.
+\[
+\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha),\qquad
+\frac{d}{d\alpha}\log\sigma(-\alpha)=-\sigma(\alpha).
+\]
 
 \subsection*{A1 Repro (exam-speed chain)}
 \textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) C, (e) C.\\
 \textbf{Q2(a)} add-one bigram: $P(Sam\mid am)=\dfrac{C(am,Sam)+1}{C(am)+|V|}=\dfrac{3}{14}$.\\
-\textbf{Q2(b)} interpolation ($\lambda_1=\lambda_2=\frac{1}{2}$): $P(Sam\mid am)=\dfrac{1}{2}\cdot\dfrac{2}{3}+\dfrac{1}{2}\cdot\dfrac{4}{25}=\dfrac{31}{75}$.\\
-\textbf{Q3} no EOS: for fixed $\ell$, $\sum_{w_{1:\ell}}P(w_{1:\ell})=1$, but not a valid global distribution across lengths.\\
+\textbf{Q2(b)} interpolation ($\lambda_1=\lambda_2=\frac{1}{2}$):\\
+\[
+P(Sam\mid am)=\dfrac{1}{2}\cdot\dfrac{2}{3}+\dfrac{1}{2}\cdot\dfrac{4}{25}=\dfrac{31}{75}.
+\]
+\textbf{Q3} no EOS: for fixed $\ell$, $\sum_{w_{1:\ell}}P(w_{1:\ell})=1$,\\
+but not a valid global distribution across lengths.\\
 \textbf{Q4} NB derivation: Bayes $\to$ drop class-independent terms $\to$ log-linear score.\\
 \textbf{Q5} logistic objective/gradient are same CE forms as L3.
 

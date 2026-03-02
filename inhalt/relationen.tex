@@ -1,6 +1,7 @@
 \section{L3: Logistic Regression, Optimization, Evaluation}
 \subsection*{Binary Logistic Regression (Compact)}
-Setup: examples $(x^{(i)},y^{(i)})$, $x=[x_1,\ldots,x_n]$, weights $w=[w_1,\ldots,w_n]$, $y\in\{0,1\}$.\\
+Setup: examples $(x^{(i)},y^{(i)})$, $x=[x_1,\ldots,x_n]$,\\
+weights $w=[w_1,\ldots,w_n]$, $y\in\{0,1\}$.\\
 \[
 \begin{aligned}
 z&=w\cdot x+b=\sum_{j=1}^{n}w_jx_j+b,\\
@@ -15,22 +16,44 @@ Conditional Bernoulli: $p(y\mid x)=\hat y^{\,y}(1-\hat y)^{1-y}$.\\
 \[
 L_{CE}(\hat y,y)=-\left[y\log\hat y+(1-y)\log(1-\hat y)\right].
 \]
-Dataset objective: $J(w,b)=\sum_{i=1}^{m}L_{CE}^{(i)}$, or $\bar J=\dfrac{1}{m}\sum_{i=1}^{m}L_{CE}^{(i)}$. Equivalent view: $L_{CE}=-\log p(y\mid x;w,b)$.
+\[
+\begin{aligned}
+J(w,b)&=\sum_{i=1}^{m}L_{CE}^{(i)},\qquad
+\bar J=\dfrac{1}{m}\sum_{i=1}^{m}L_{CE}^{(i)},\\
+L_{CE}&=-\log p(y\mid x;w,b).
+\end{aligned}
+\]
 
 \subsection*{Gradient and SGD}
 \[
-\frac{\partial L_{CE}}{\partial w_j}=(\hat y-y)x_j,\qquad \frac{\partial L_{CE}}{\partial b}=\hat y-y,\qquad \nabla_wL=(\hat y-y)x.
+\begin{aligned}
+\frac{\partial L_{CE}}{\partial w_j}&=(\hat y-y)x_j,\qquad
+\frac{\partial L_{CE}}{\partial b}=\hat y-y,\\
+\nabla_wL&=(\hat y-y)x.
+\end{aligned}
 \]
-SGD: $w\leftarrow w-\eta\nabla_wL$, $b\leftarrow b-\eta\dfrac{\partial L}{\partial b}$, equivalently $\theta_{t+1}=\theta_t-\eta\nabla_\theta L$.
+SGD: $w\leftarrow w-\eta\nabla_wL$, $b\leftarrow b-\eta\dfrac{\partial L}{\partial b}$,\\
+equivalently $\theta_{t+1}=\theta_t-\eta\nabla_\theta L$.
 
 \subsection*{Evaluation + Confusion Matrix}
-Confusion matrix mapping: $TP$ (gold+, pred+), $FN$ (gold+, pred-), $FP$ (gold-, pred+), $TN$ (gold-, pred-).\\
-$\text{Accuracy}=\dfrac{TP+TN}{TP+TN+FP+FN}$, $\text{Precision}=\dfrac{TP}{TP+FP}$, $\text{Recall}=\dfrac{TP}{TP+FN}$, $F_1=\dfrac{2PR}{P+R}$.\\
+Confusion matrix mapping: $TP$ (gold+, pred+), $FN$ (gold+, pred-),\\
+$FP$ (gold-, pred+), $TN$ (gold-, pred-).\\
+\[
+\begin{aligned}
+\text{Accuracy}&=\dfrac{TP+TN}{TP+TN+FP+FN},\qquad
+\text{Precision}=\dfrac{TP}{TP+FP},\\
+\text{Recall}&=\dfrac{TP}{TP+FN},\qquad
+F_1=\dfrac{2PR}{P+R}.
+\end{aligned}
+\]
 Macro: average per-class metrics equally; Micro: aggregate counts first, then compute.
 
 \subsection*{A1 Repro (L3 Core)}
 \[
-\ell^{(i)}(\theta)= -\Big[y^{(i)}\log\sigma(\theta\cdot\phi(x^{(i)}))+(1-y^{(i)})\log\!\left(1-\sigma(\theta\cdot\phi(x^{(i)}))\right)\Big].
+\begin{aligned}
+\ell^{(i)}(\theta)= -\Big[&y^{(i)}\log\sigma(\theta\cdot\phi(x^{(i)}))\\
+&+(1-y^{(i)})\log\!\left(1-\sigma(\theta\cdot\phi(x^{(i)}))\right)\Big].
+\end{aligned}
 \]
 \[
 \nabla_\theta\ell^{(i)}=\left(\sigma(\theta\cdot\phi(x^{(i)}))-y^{(i)}\right)\phi(x^{(i)}).
