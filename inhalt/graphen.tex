@@ -1,37 +1,220 @@
-\section{L5+L6 Neural LM + Transformer}
-\subsection*{Neural Units and Classifiers}
-Neuron: $z=w\cdot x+b$, $a=f(z)$, with $\sigma(z)=\dfrac{1}{1+e^{-z}}$, $\tanh(z)=\dfrac{e^z-e^{-z}}{e^z+e^{-z}}$, $\mathrm{ReLU}(z)=\max(0,z)$.\\
-Feedforward LM sketch: $x_t=[e_{w_{t-n+1}};\ldots;e_{w_{t-1}}]$, $h_t=g(Wx_t+b_1)$, $y_t=\mathrm{softmax}(Uh_t+b_2)$, $L_t=-\log y_t[w_{t+1}]$.\\
-Multinomial logistic regression: $y=\mathrm{softmax}(Wx+b)$, binary logistic is the $|C|=2$ case.
+\section{L5+L6: Neural Nets, Transformer, LLM, A2 Repro}
+\subsection*{Feedforward Neural LM / Classifier}
+Neural unit:
+\[
+z=w\cdot x+b,
+\qquad
+ a=f(z).
+\]
+Activation choices:
+\[
+\sigma(z)=\frac{1}{1+e^{-z}},
+\]
+\[
+\tanh(z)=\frac{e^z-e^{-z}}{e^z+e^{-z}},
+\]
+\[
+\mathrm{ReLU}(z)=\max(0,z).
+\]
+Feedforward LM skeleton:
+\[
+x_t=[e_{w_{t-n+1}};\ldots;e_{w_{t-1}}],
+\]
+\[
+h_t=g(Wx_t+b_1).
+\]
+\[
+y_t=\mathrm{softmax}(Uh_t+b_2).
+\]
+\[
+P(w_t\mid w_{<t})=y_t[w_t].
+\]
+\[
+L_{CE}(t)=-\log y_t[w_{t+1}].
+\]
 
-\subsection*{Backprop / Optimization}
-Chain rule: $\dfrac{d}{dx}u(v(x))=\dfrac{du}{dv}\dfrac{dv}{dx}$.\\
-Derivatives: $\sigma'(z)=\sigma(z)(1-\sigma(z))$, $\tanh'(z)=1-\tanh^2(z)$, $\mathrm{ReLU}'(z)=\mathbf{1}[z\ge0]$.\\
-SGD update: $\theta\leftarrow\theta-\eta\nabla_\theta L$; L2 regularization is MAP with Gaussian prior.
+\subsection*{L5 Multinomial/Softmax Regression}
+Lecture framing: multinomial logistic regression is a 1-layer network.\\
+Input $x\in\mathbb R^d$, output class-probability vector $y\in\mathbb R^{|C|}$:
+\[
+y=\mathrm{softmax}(Wx+b),\qquad y_c=p(y=c\mid x).
+\]
+Multiclass probability form: $p(y=c\mid x)=\mathrm{softmax}(Wx+b)_c$.\\
+Multiclass CE/NLL: $L=-\log p(y\mid x)$; binary logistic is the $|C|=2$ special case.\\
+Two-layer softmax classifier (slide form): $h=g(Wx+b_1)$, $y=\mathrm{softmax}(Uh+b_2)$.
 
-\subsection*{Autoregressive LM and Decoding}
-Factorization: $P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_{<i})$.\\
-Greedy: $\hat w_t=\arg\max_w P(w\mid w_{<t})$; temperature: $\mathrm{softmax}(u/\tau)$ ($\tau\downarrow0$ more argmax-like, larger $\tau$ flatter).\\
-Top-$k$: keep best $k$ tokens then sample (when $k=1$, equals greedy).\\
-Top-$p$: keep smallest set $S$ with $\sum_{w\in S}p(w)\ge p_0$, renormalize, then sample.
+\subsection*{L5 Optional Regularization/Prior}
+If slide includes Gaussian prior view: L2 regularization is MAP with Gaussian prior on weights.\\
+Equivalent objective form:
+\[
+\hat\theta=\arg\max_\theta\ \sum_i \log p(y^{(i)}\mid x^{(i)};\theta)-\lambda\|\theta\|_2^2.
+\]
+Interpretation: Gaussian prior centered at $0$ encourages smaller weights.
 
-\subsection*{Transformer Attention}
-Single-head: $q_i=x_iW^Q$, $k_j=x_jW^K$, $v_j=x_jW^V$, score $=\dfrac{q_i\cdot k_j}{\sqrt{d_k}}$, $\alpha_{ij}=\mathrm{softmax}(score)$, $a_i=\sum_{j\le i}\alpha_{ij}v_j$.\\
-Multi-head: compute heads in parallel and concatenate, then project by $W^O$.\\
-LayerNorm: $\mu=\dfrac{1}{d}\sum_r x_r$, $\sigma=\sqrt{\dfrac{1}{d}\sum_r(x_r-\mu)^2}$, $\mathrm{LN}(x)=\gamma\dfrac{x-\mu}{\sigma}+\beta$.\\
-Decoder block (pre-norm residual): LN $\to$ MHA $+$ residual $\to$ LN $\to$ FFN $+$ residual.
+\subsection*{Backprop / Chain Rule Mini-Template}
+\[
+\frac{d}{dx}u(v(x))=\frac{du}{dv}\frac{dv}{dx}.
+\]
+\[
+\frac{d}{dx}u(v(w(x)))=\frac{du}{dv}\frac{dv}{dw}\frac{dw}{dx}.
+\]
+Derivatives used in lecture:
+\[
+\frac{d\sigma(z)}{dz}=\sigma(z)(1-\sigma(z)),
+\]
+\[
+\frac{d\tanh(z)}{dz}=1-\tanh^2(z),
+\]
+\[
+\frac{d\,\mathrm{ReLU}(z)}{dz}=
+\begin{cases}
+0,&z<0\\
+1,&z\ge 0
+\end{cases}
+\]
+SGD update:
+\[
+\theta\leftarrow\theta-\eta\nabla_\theta L.
+\]
 
-\subsection*{L6 Training Pipeline / Risks}
-Pipeline: pretraining $\to$ instruction tuning $\to$ preference alignment.\\
-Teacher forcing: train next-token CE with gold previous token as context.\\
-PEFT tunes a small parameter subset; continued pretraining adapts domain.\\
-Common risks: hallucination, privacy leakage, toxicity, representation bias.
+\subsection*{Decoder-only LLM and Decoding}
+Autoregressive factorization:
+\[
+P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_{<i}).
+\]
+Greedy decoding:
+\[
+\hat w_t=\arg\max_{w\in V}P(w\mid w_{<t}).
+\]
+Logits to probabilities:
+\[
+y=\mathrm{softmax}(u).
+\]
+Temperature sampling:
+\[
+\mathrm{softmax}(u/\tau).
+\]
+\[
+\tau\uparrow \Rightarrow \text{flatter distribution}.
+\]
+Random sampling caveat from lecture: probability tails contain many low-probability odd words; accumulated tail mass still causes bad samples.\\
+Quality/diversity tradeoff: emphasize high-probability words $\Rightarrow$ quality up, diversity down; flatter sampling does the reverse.
 
-\subsection*{A2 Checks}
-SGNS objective: $J(\theta)=\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)+k\sum_{(w,\cdot)\in D}\mathbb E_{c'\sim P_n}[\log\sigma(-u_{c'}\cdot v_w)]$.\\
-$\dfrac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha)$; optimal pair score in assignment derivation: $\alpha^*=\log\dfrac{A}{B}$, and with negative sampling $\alpha^*=PMI-\log k$.\\
-Negative distribution: $P_n(w)\propto P_{unigram}(w)^\beta$, typically $0<\beta<1$ (commonly $0.75$).
+\subsection*{Top-k and Top-p Decoding (L6)}
+Top-$k$: keep only $k$ highest-probability tokens, renormalize, then sample.\\
+When $k=1$, top-$k$ reduces to greedy decoding.\\
+Top-$p$ (nucleus): choose smallest token set $S$ with cumulative probability $\sum_{w\in S}p(w)\ge p$, renormalize on $S$, then sample.\\
+Why top-$p$: unlike fixed $k$, retained set size adapts to distribution sharpness by context.
 
-\subsection*{L5/L6 Reminders}
-Report tokenizer + decoding settings with perplexity or generation results.\\
-Wrong causal mask leaks future tokens and invalidates autoregressive evaluation.
+\subsection*{Transformer Attention (canonical)}
+Single-head projections:
+\[
+q_i=x_iW^Q,\qquad k_j=x_jW^K.
+\]
+\[
+v_j=x_jW^V.
+\]
+Scaled dot-product attention:
+\[
+score(x_i,x_j)=\frac{q_i\cdot k_j}{\sqrt{d_k}},
+\]
+\[
+\alpha_{ij}=\mathrm{softmax}(score(x_i,x_j)),
+\]
+\[
+a_i=\sum_{j\le i}\alpha_{ij}v_j.
+\]
+Multi-head (head index $c=1,\ldots,h$):
+\[
+q_i^c=x_iW^{Q_c}.
+\]
+\[
+k_j^c=x_jW^{K_c}.
+\]
+\[
+v_j^c=x_jW^{V_c}.
+\]
+\[
+head_i^c=\sum_{j\le i}\alpha_{ij}^c v_j^c,
+\]
+\[
+a_i=(head_i^1\oplus\cdots\oplus head_i^h)W^O.
+\]
+LayerNorm (Eq. 9.21--9.24 style):
+\[
+\mu=\frac{1}{d}\sum_{r=1}^{d}x_r,
+\]
+\[
+\sigma=\sqrt{\frac{1}{d}\sum_{r=1}^{d}(x_r-\mu)^2},
+\]
+\[
+\mathrm{LayerNorm}(x)=\gamma\frac{x-\mu}{\sigma}+\beta.
+\]
+Transformer block (pre-norm residual stream):
+\[
+t_i^1=LN(x_i).
+\]
+\[
+t_i^2=MHA(t_i^1,\{x_1^1,\ldots,x_N^1\}).
+\]
+\[
+t_i^3=t_i^2+x_i,\qquad t_i^4=LN(t_i^3).
+\]
+\[
+t_i^5=FFN(t_i^4),\qquad h_i=t_i^5+t_i^3.
+\]
+
+\subsection*{Post-training Modes and Risks}
+Continued pretraining: continue LM objective on domain corpus.\\
+PEFT: tune small adapter/low-rank parameter subset.\\
+SFT: supervised instruction-response fine-tuning.\\
+Perplexity caveat: tokenizer-sensitive; compare only under same tokenization.\\
+Safety quick list: hallucination, privacy leakage, toxicity, representation bias.
+
+\subsection*{A2 Repro (exam-speed chain)}
+\textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) D, (e) A.\\
+\textbf{Q2(a)} SGNS objective:
+\[
+\begin{array}{l}
+J(\theta)=
+\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)\\
+\quad +k\sum_{(w,\cdot)\in D}\mathbb E_{c'\sim P_n}[g(w,c')].
+\end{array}
+\]
+\[
+g(w,c')=\log\sigma(-u_{c'}\cdot v_w),\qquad
+\max_\theta J(\theta).
+\]
+Expanded expectation form:
+\[
+\begin{array}{l}
+J(\theta)=
+\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)\\
+\quad +k\sum_{(w,\cdot)\in D}\sum_{c'\in V}P_n(c')\,g(w,c').
+\end{array}
+\]
+\textbf{Q2(b)}
+\[
+\frac{d}{d\alpha}\log\sigma(\alpha)=\frac{1}{1+e^{\alpha}}.
+\]
+\[
+\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha).
+\]
+\textbf{Q2(c)} for one pair ($\alpha=u_0\cdot v_1$):
+\[
+\alpha^*=\log\frac{A}{B}.
+\]
+\textbf{Q2(d)} with negative sampling:
+\[
+\alpha^*=PMI(1,0)-\log k.
+\]
+\textbf{Q2(e)} choose $0<\beta<1$ in
+\[
+P_n(w)\propto P_{unigram}(w)^\beta.
+\]
+common choice $\beta=0.75$.
+
+\subsection*{L5/L6 Pitfalls}
+- Most backprop bugs are wrong shape or wrong chain path.\\
+- Wrong causal mask leaks future tokens and breaks autoregressive eval.\\
+- Always report tokenizer and decoding setup with LM metrics.
