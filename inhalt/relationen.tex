@@ -1,11 +1,17 @@
 \section{L3: Logistic Regression, Optimization, Evaluation}
 \subsection*{Binary Logistic Regression (Compact)}
 \textbf{Setup:} examples $(x^{(i)},y^{(i)})$, feature vector $x=[x_1,\ldots,x_n]$, weights $w=[w_1,\ldots,w_n]$, $y\in\{0,1\}$.\\
-Weighted sum: $z=w\cdot x+b=\sum_{j=1}^{n}w_jx_j+b$.\\
-Sigmoid/logistic: $\hat y=\sigma(z)=\dfrac{1}{1+\exp(-z)}=\sigma(w\cdot x+b)$.\\
-$p(y=1\mid x)=\hat y,\quad p(y=0\mid x)=1-\hat y=\sigma(-(w\cdot x+b))$.\\
+Weighted sum: $z=w^\top x+b=\sum_{j=1}^{n}w_jx_j+b$.\\
+Sigmoid/logistic function: $\sigma(z)=\dfrac{1}{1+\exp(-z)}$.\\
+\[
+\begin{array}{l}
+\hat{y}=\sigma(w^\top x+b),\\
+p(y=1\mid x)=\hat{y},\\
+p(y=0\mid x)=1-\hat{y}.
+\end{array}
+\]
 Useful identity: $1-\sigma(a)=\sigma(-a)$.\\
-Classifier: $\hat y_{cls}=1$ if $p(y=1\mid x)>0.5$, else $0$ (decision boundary $w\cdot x+b=0$).
+Classifier: $\hat y_{cls}=1$ if $p(y=1\mid x)>0.5$, else $0$ (decision boundary $w^\top x+b=0$).
 
 \subsection*{Training Objective (CE/NLL)}
 Conditional Bernoulli form: $p(y\mid x)=\hat y^{\,y}(1-\hat y)^{1-y}$.\\
