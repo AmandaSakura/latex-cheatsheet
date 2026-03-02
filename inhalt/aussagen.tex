@@ -60,6 +60,8 @@ Substitution API: \texttt{re.sub(...)}.\\
 Capture-group reorder: group2 then group1.
 
 \subsection*{L1 Pitfalls}
+- Code switching: mixing languages in one utterance; important because segmentation/token counts can shift abruptly.\\
+- Corpus datasheets: structured dataset documentation; important for understanding coverage, bias, and intended use.\\
 - Sentence boundary ambiguity: period can be abbreviation or EOS.\\
 - Tokenizer mismatch invalidates direct perplexity/model comparison.\\
 - Mixing byte-level and code-point operations causes silent bugs.

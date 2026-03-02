@@ -39,7 +39,8 @@ Input $x\in\mathbb R^d$, output class-probability vector $y\in\mathbb R^{|C|}$:
 \[
 y=\mathrm{softmax}(Wx+b),\qquad y_c=p(y=c\mid x).
 \]
-Binary logistic is the $|C|=2$ special case of the same idea.\\
+Multiclass probability form: $p(y=c\mid x)=\mathrm{softmax}(Wx+b)_c$.\\
+Multiclass CE/NLL: $L=-\log p(y\mid x)$; binary logistic is the $|C|=2$ special case.\\
 Two-layer softmax classifier (slide form): $h=g(Wx+b_1)$, $y=\mathrm{softmax}(Uh+b_2)$.
 
 \subsection*{L5 Optional Regularization/Prior}

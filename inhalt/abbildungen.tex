@@ -46,9 +46,11 @@ Large context window ($C=\pm5$): neighbors shift toward topical/semantic field r
 Lecture example (Hogwarts): small window gives fictional-school neighbors; large window gives Harry-Potter-world terms.
 
 \subsection*{Analogy by Parallelogram}
-Parallelogram method: for $a:a^\*: : b:b^\*$, use $v(b^\*)\approx v(a^\*)-v(a)+v(b)$.\\
+For $a:a^\*::b:b^\*$: $v(b^\*) \approx v(b)-v(a)+v(a^\*)$.\\
 Canonical examples: $v(king)-v(man)+v(woman)\approx v(queen)$;\\
 $v(Paris)-v(France)+v(Italy)\approx v(Rome)$.
+- Caveat (L4 slide): not universal; works better for some relation types than others.\\
+- Caveat (L4 slide): performance depends on frequent words and stable semantics.
 
 \subsection*{Embedding Bias Notes}
 Slides emphasize: embeddings reflect statistical regularities and cultural bias in training data.\\
@@ -63,6 +65,8 @@ P(+\mid w,c)=\sigma(u_c\cdot v_w).
 \[
 P(-\mid w,c)=\sigma(-u_c\cdot v_w).
 \]
+- Two sets of embeddings in training: word vectors $v_w$ and context vectors $u_c$.\\
+- Final representation in practice: use $v_w$, or sometimes $v_w+u_w$.
 One positive + $k$ negatives objective:
 \[
 \begin{array}{l}

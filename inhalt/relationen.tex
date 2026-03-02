@@ -1,76 +1,35 @@
 \section{L3: Logistic Regression, Optimization, Evaluation}
-\subsection*{Model and Decision Rule}
-Binary logistic regression:
-\[
-\hat y=\sigma(w\cdot x+b),\qquad
-\sigma(z)=\frac{1}{1+e^{-z}}.
-\]
-\[
-p(y=1\mid x)=\hat y,\qquad p(y=0\mid x)=1-\hat y.
-\]
-Classifier (threshold $0.5$):
-\[
-\hat y_{cls}=\mathbf{1}[\sigma(w\cdot x+b)\ge 0.5],
-\]
-decision boundary $w\cdot x+b=0$.
+\subsection*{Binary Logistic Regression (Compact)}
+\textbf{Setup:} examples $(x^{(i)},y^{(i)})$, feature vector $x=[x_1,\ldots,x_n]$, weights $w=[w_1,\ldots,w_n]$, $y\in\{0,1\}$.\\
+Weighted sum: $z=w\cdot x+b=\sum_{j=1}^{n}w_jx_j+b$.\\
+Sigmoid/logistic: $\hat y=\sigma(z)=\dfrac{1}{1+\exp(-z)}=\sigma(w\cdot x+b)$.\\
+$p(y=1\mid x)=\hat y,\quad p(y=0\mid x)=1-\hat y=\sigma(-(w\cdot x+b))$.\\
+Useful identity: $1-\sigma(a)=\sigma(-a)$.\\
+Classifier: $\hat y_{cls}=1$ if $p(y=1\mid x)>0.5$, else $0$ (decision boundary $w\cdot x+b=0$).
 
-\subsection*{Cross-Entropy / NLL}
-Single-example binary CE:
+\subsection*{Training Objective (CE/NLL)}
+Conditional Bernoulli form: $p(y\mid x)=\hat y^{\,y}(1-\hat y)^{1-y}$.\\
+Single-example cross-entropy:
 \[
-L_{CE}(\hat y,y)=
--\left[y\log\hat y+(1-y)\log(1-\hat y)\right].
+L_{CE}(\hat y,y)=-\left[y\log\hat y+(1-y)\log(1-\hat y)\right].
 \]
-Dataset objective:
-\[
-J(w,b)=\sum_{i=1}^{m}L_{CE}^{(i)},
-\qquad
-\bar J=\frac{1}{m}\sum_{i=1}^{m}L_{CE}^{(i)}.
-\]
-Equivalent NLL view:
-\[
-L_{CE}=-\log p(y\mid x;w,b).
-\]
+Dataset objective: $J(w,b)=\sum_{i=1}^{m}L_{CE}^{(i)}$, or $\bar J=\dfrac{1}{m}\sum_{i=1}^{m}L_{CE}^{(i)}$.\\
+Equivalent NLL form: $L_{CE}=-\log p(y\mid x;w,b)$.
 
 \subsection*{Gradient and SGD}
 For one sample $(x,y)$:
 \[
-\frac{\partial L_{CE}}{\partial w_j}=
-\big(\sigma(w\cdot x+b)-y\big)x_j,
+\frac{\partial L_{CE}}{\partial w_j}=(\hat y-y)x_j,\qquad
+\frac{\partial L_{CE}}{\partial b}=\hat y-y.
 \]
-\[
-\frac{\partial L_{CE}}{\partial b}=\sigma(w\cdot x+b)-y.
-\]
-Vector form:
-\[
-\nabla_w L=(\sigma(w\cdot x+b)-y)x.
-\]
-Updates:
-\[
-w\leftarrow w-\eta\nabla_w L,
-\qquad
-b\leftarrow b-\eta\frac{\partial L}{\partial b}.
-\]
-Mini-batch SGD: replace single-sample gradients by batch mean gradients.
+Vector gradient: $\nabla_wL=(\hat y-y)x$.\\
+SGD updates: $w\leftarrow w-\eta\nabla_wL$, $b\leftarrow b-\eta\dfrac{\partial L}{\partial b}$, equivalently $\theta_{t+1}=\theta_t-\eta\nabla_\theta L$.
 
 \subsection*{Evaluation Metrics}
-\[
-\text{Accuracy}=\frac{TP+TN}{TP+TN+FP+FN}.
-\]
-\[
-\text{Precision}=\frac{TP}{TP+FP},
-\]
-\[
-\text{Recall}=\frac{TP}{TP+FN}.
-\]
-\[
-F_1=\frac{2\cdot\text{Precision}\cdot\text{Recall}}
-{\text{Precision}+\text{Recall}}.
-\]
-Macro: average class-wise scores equally.\\
-Micro: aggregate counts first, then compute metric.
+$\text{Accuracy}=\dfrac{TP+TN}{TP+TN+FP+FN}$, $\text{Precision}=\dfrac{TP}{TP+FP}$, $\text{Recall}=\dfrac{TP}{TP+FN}$, $F_1=\dfrac{2PR}{P+R}$.\\
+Macro: average per-class metrics equally; Micro: aggregate counts first, then compute.
 
-\subsection*{A1 Repro (L3 core)}
-Assignment notation:
+\subsection*{A1 Repro (L3 Core)}
 \[
 \begin{array}{l}
 \ell^{(i)}(\theta)= -\Big[
@@ -83,8 +42,7 @@ Assignment notation:
 \nabla_\theta\ell^{(i)}=
 \left(\sigma(\theta\cdot\phi(x^{(i)}))-y^{(i)}\right)\phi(x^{(i)}).
 \]
-
 \subsection*{L3 Pitfalls}
-- Accuracy can be misleading under heavy class imbalance.\\
+- Accuracy can be misleading under class imbalance; report precision/recall/$F_1$.\\
 - Too-large learning rate diverges; too-small learning rate stalls.\\
-- Feature scaling/representation quality strongly affects convergence.
+- Feature design/interactions often dominate final performance.
