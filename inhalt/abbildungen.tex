@@ -1,32 +1,44 @@
 \section{L4: Naive Bayes, Vectors, SGNS, A1 Repro}
 \subsection*{Multinomial Naive Bayes}
 \[
-\hat c_{MAP}=\arg\max_{c\in C}P(c\mid x)=\arg\max_{c\in C}P(c)P(x\mid c).
+\hat c_{MAP}=\arg\max_{c\in C}P(c\mid x).
+\]
+\[
+\hat c_{MAP}=\arg\max_{c\in C}P(c)P(x\mid c).
 \]
 For bag-of-words counts $x_i$:
 \[
-P(x\mid c)=\frac{n!}{\prod_{i=1}^{|V|}x_i!}\prod_{i=1}^{|V|}\theta_{c,i}^{x_i},\qquad n=\sum_i x_i.
+P(x\mid c)=
+\frac{n!}{\prod_{i=1}^{|V|}x_i!}
+\prod_{i=1}^{|V|}\theta_{c,i}^{x_i}.
+\]
+\[
+n=\sum_i x_i.
 \]
 Log-space score:
 \[
-\hat c=\arg\max_{c\in C}\left[\log P(c)+\sum_{i=1}^{|V|}x_i\log\theta_{c,i}\right].
+\hat c=\arg\max_{c\in C}
+\left[\log P(c)+\sum_{i=1}^{|V|}x_i\log\theta_{c,i}\right].
 \]
 \[
-\theta_{c,i}^{MLE}=\dfrac{n_{i,c}}{n_c},\qquad
-\theta_{c,i}=\dfrac{n_{i,c}+\alpha}{n_c+\alpha|V|}.
+\theta_{c,i}^{MLE}=\frac{n_{i,c}}{n_c},
+\qquad
+\theta_{c,i}=\frac{n_{i,c}+\alpha}{n_c+\alpha|V|}.
 \]
 
 \subsection*{Binary NB vs Bernoulli NB (exam trap)}
-Binary NB (lecture variant): clip counts at 1,\\
-then use multinomial-style training with occurrence features.\\
+Binary NB (lecture variant): clip counts at 1, then use multinomial-style training.\\
 Bernoulli NB: models presence/absence explicitly per token dimension.\\
-Takeaway: both are "0/1-like", but not the same likelihood model.
+Both are "0/1-like", but not the same likelihood model.
 
 \subsection*{Word Vectors and Similarity}
 \[
-a\cdot b=\sum_i a_i b_i,\qquad
-\|a\|=\sqrt{\sum_i a_i^2},\qquad
-\cos(a,b)=\dfrac{a\cdot b}{\|a\|\|b\|}.
+a\cdot b=\sum_i a_i b_i.
+\]
+\[
+\|a\|=\sqrt{\sum_i a_i^2},
+\qquad
+\cos(a,b)=\frac{a\cdot b}{\|a\|\|b\|}.
 \]
 Use cosine when length/frequency bias is undesirable.
 
@@ -36,39 +48,48 @@ Large window ($C=\pm5$): neighbors become topical/semantic-field.
 
 \subsection*{Analogy by Parallelogram}
 \[
-v(b^\*)\approx v(b)-v(a)+v(a^\*).
+v(b^{*})\approx v(b)-v(a)+v(a^{*}).
 \]
-Canonical examples: $v(king)-v(man)+v(woman)\approx v(queen)$;\\
+Examples: $v(king)-v(man)+v(woman)\approx v(queen)$,\\
 $v(Paris)-v(France)+v(Italy)\approx v(Rome)$.\\
 Works better for some relation types than others.
 
 \subsection*{Embedding Bias Notes}
-Embeddings reflect training statistics and social bias;\\
-downstream retrieval/ranking/classification can inherit this bias.
+Embeddings reflect training statistics and social bias; downstream systems can inherit this bias.
 
 \subsection*{SGNS Core (lecture form)}
 \[
-P(+\mid w,c)=\sigma(u_c\cdot v_w),\qquad P(-\mid w,c)=\sigma(-u_c\cdot v_w).
+P(+\mid w,c)=\sigma(u_c\cdot v_w).
+\]
+\[
+P(-\mid w,c)=\sigma(-u_c\cdot v_w).
 \]
 Training keeps word vectors $v_w$ and context vectors $u_c$.\\
-Final representation often uses $v_w$ (or $v_w+u_w$).\\
-One positive + $k$ negatives objective:
+Final representation often uses $v_w$ (or $v_w+u_w$).
 \[
-L_{CE}= -\left[\log\sigma(u_{c^+}\cdot v_w)+\sum_{i=1}^{k}\log\sigma(-u_{c_i^-}\cdot v_w)\right].
+s^+=u_{c^+}\cdot v_w,\qquad s_i^-=u_{c_i^-}\cdot v_w.
 \]
 \[
-\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha),\qquad
+L_{CE}= -\left[\log\sigma(s^+)+\sum_{i=1}^{k}\log\sigma(-s_i^-)\right].
+\]
+\[
+\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha).
+\]
+\[
 \frac{d}{d\alpha}\log\sigma(-\alpha)=-\sigma(\alpha).
 \]
 
 \subsection*{A1 Repro (exam-speed chain)}
 \textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) C, (e) C.\\
 \textbf{Q2(a)} add-one bigram: $P(Sam\mid am)=\dfrac{C(am,Sam)+1}{C(am)+|V|}=\dfrac{3}{14}$.\\
-\textbf{Q2(b)} interpolation ($\lambda_1=\lambda_2=\frac{1}{2}$):\\
+\textbf{Q2(b)} interpolation:
 \[
-P(Sam\mid am)=\dfrac{1}{2}\cdot\dfrac{2}{3}+\dfrac{1}{2}\cdot\dfrac{4}{25}=\dfrac{31}{75}.
+P(Sam\mid am)=\frac{1}{2}\cdot\frac{2}{3}+\frac{1}{2}\cdot\frac{4}{25}=\frac{31}{75}.
 \]
-\textbf{Q3} no EOS: for fixed $\ell$, $\sum_{w_{1:\ell}}P(w_{1:\ell})=1$,\\
+\textbf{Q3} no EOS: for fixed $\ell$,\\
+\[
+\sum_{w_{1:\ell}}P(w_{1:\ell})=1,
+\]
 but not a valid global distribution across lengths.\\
 \textbf{Q4} NB derivation: Bayes $\to$ drop class-independent terms $\to$ log-linear score.\\
 \textbf{Q5} logistic objective/gradient are same CE forms as L3.

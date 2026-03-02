@@ -1,65 +1,81 @@
 \section{L3: Logistic Regression, Optimization, Evaluation}
 \subsection*{Binary Logistic Regression (Compact)}
-Setup: examples $(x^{(i)},y^{(i)})$, $x=[x_1,\ldots,x_n]$,\\
-weights $w=[w_1,\ldots,w_n]$, $y\in\{0,1\}$.\\
+Setup: examples $(x^{(i)},y^{(i)})$, feature vector $x=[x_1,\ldots,x_n]$,\\
+weights $w=[w_1,\ldots,w_n]$, $y\in\{0,1\}$.
 \[
-\begin{aligned}
-z&=w\cdot x+b=\sum_{j=1}^{n}w_jx_j+b,\\
-\hat y&=\sigma(z)=\frac{1}{1+\exp(-z)}=\sigma(w\cdot x+b),\\
-p(y=1\mid x)&=\hat y,\quad p(y=0\mid x)=1-\hat y=\sigma(-(w\cdot x+b)).
-\end{aligned}
+z=w\cdot x+b=\sum_{j=1}^{n}w_jx_j+b.
+\]
+\[
+\hat y=\sigma(z)=\frac{1}{1+\exp(-z)}=\sigma(w\cdot x+b).
+\]
+\[
+p(y=1\mid x)=\hat y.
+\]
+\[
+p(y=0\mid x)=1-\hat y=\sigma(-(w\cdot x+b)).
 \]
 Useful identity: $1-\sigma(a)=\sigma(-a)$. Decision boundary: $w\cdot x+b=0$.
 
 \subsection*{Training Objective (CE/NLL)}
-Conditional Bernoulli: $p(y\mid x)=\hat y^{\,y}(1-\hat y)^{1-y}$.\\
+Conditional Bernoulli: $p(y\mid x)=\hat y^{\,y}(1-\hat y)^{1-y}$.
 \[
 L_{CE}(\hat y,y)=-\left[y\log\hat y+(1-y)\log(1-\hat y)\right].
 \]
 \[
-\begin{aligned}
-J(w,b)&=\sum_{i=1}^{m}L_{CE}^{(i)},\qquad
-\bar J=\dfrac{1}{m}\sum_{i=1}^{m}L_{CE}^{(i)},\\
-L_{CE}&=-\log p(y\mid x;w,b).
-\end{aligned}
+J(w,b)=\sum_{i=1}^{m}L_{CE}^{(i)},\qquad
+\bar J=\frac{1}{m}\sum_{i=1}^{m}L_{CE}^{(i)}.
 \]
+Equivalent view: $L_{CE}=-\log p(y\mid x;w,b)$.
 
 \subsection*{Gradient and SGD}
 \[
-\begin{aligned}
-\frac{\partial L_{CE}}{\partial w_j}&=(\hat y-y)x_j,\qquad
-\frac{\partial L_{CE}}{\partial b}=\hat y-y,\\
-\nabla_wL&=(\hat y-y)x.
-\end{aligned}
+\frac{\partial L_{CE}}{\partial w_j}=(\hat y-y)x_j,
+\qquad
+\frac{\partial L_{CE}}{\partial b}=\hat y-y.
 \]
-SGD: $w\leftarrow w-\eta\nabla_wL$, $b\leftarrow b-\eta\dfrac{\partial L}{\partial b}$,\\
-equivalently $\theta_{t+1}=\theta_t-\eta\nabla_\theta L$.
+\[
+\nabla_wL=(\hat y-y)x.
+\]
+SGD updates:
+\[
+w\leftarrow w-\eta\nabla_wL,
+\qquad
+b\leftarrow b-\eta\frac{\partial L}{\partial b}.
+\]
+Equivalent form: $\theta_{t+1}=\theta_t-\eta\nabla_\theta L$.
 
 \subsection*{Evaluation + Confusion Matrix}
 Confusion matrix mapping: $TP$ (gold+, pred+), $FN$ (gold+, pred-),\\
-$FP$ (gold-, pred+), $TN$ (gold-, pred-).\\
+$FP$ (gold-, pred+), $TN$ (gold-, pred-).
 \[
-\begin{aligned}
-\text{Accuracy}&=\dfrac{TP+TN}{TP+TN+FP+FN},\qquad
-\text{Precision}=\dfrac{TP}{TP+FP},\\
-\text{Recall}&=\dfrac{TP}{TP+FN},\qquad
-F_1=\dfrac{2PR}{P+R}.
-\end{aligned}
+\text{Accuracy}=\frac{TP+TN}{TP+TN+FP+FN}.
 \]
-Macro: average per-class metrics equally; Micro: aggregate counts first, then compute.
+\[
+\text{Precision}=\frac{TP}{TP+FP}.
+\]
+\[
+\text{Recall}=\frac{TP}{TP+FN}.
+\]
+\[
+F_1=\frac{2PR}{P+R}.
+\]
+Macro: average per-class metrics equally.\\
+Micro: aggregate counts first, then compute.
 
 \subsection*{A1 Repro (L3 Core)}
 \[
 \begin{aligned}
-\ell^{(i)}(\theta)= -\Big[&y^{(i)}\log\sigma(\theta\cdot\phi(x^{(i)}))\\
-&+(1-y^{(i)})\log\!\left(1-\sigma(\theta\cdot\phi(x^{(i)}))\right)\Big].
+z_i&=\theta\cdot\phi(x^{(i)}),\\
+\ell^{(i)}(\theta)&=
+-\left[y^{(i)}\log\sigma(z_i)\right.\\
+&\left.+(1-y^{(i)})\log(1-\sigma(z_i))\right].
 \end{aligned}
 \]
 \[
-\nabla_\theta\ell^{(i)}=\left(\sigma(\theta\cdot\phi(x^{(i)}))-y^{(i)}\right)\phi(x^{(i)}).
+\nabla_\theta\ell^{(i)}=
+\left(\sigma(z_i)-y^{(i)}\right)\phi(x^{(i)}).
 \]
-
 \subsection*{L3 Pitfalls}
-- Accuracy can mislead under class imbalance; always report precision/recall/$F_1$.\\
+- Accuracy can mislead under class imbalance; report precision/recall/$F_1$.\\
 - Too-large learning rate diverges; too-small learning rate stalls.\\
 - Feature engineering/interactions often dominate final performance.

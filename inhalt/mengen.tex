@@ -1,81 +1,112 @@
 \section{L2: Min Edit Distance, N-grams, Perplexity, Smoothing}
 \subsection*{Min Edit Distance (Levenshtein)}
-Given strings $X=x_1\ldots x_M$, $Y=y_1\ldots y_N$:
+Given strings $X=x_1\ldots x_M$, $Y=y_1\ldots y_N$.
 \[
-\begin{aligned}
-D(i,0)&=i,\quad D(0,j)=j,\\
-D(i,j)&=\min\{D(i-1,j)+1,\ D(i,j-1)+1,\ D(i-1,j-1)+cost\}.
-\end{aligned}
+D(i,0)=i,\qquad D(0,j)=j.
 \]
-$cost=0$ if $x_i=y_j$, else substitution cost (lecture often uses $2$). Weighted form:
+\[
+D(i,j)=\min\left\{
+\begin{array}{l}
+D(i-1,j)+1,\\
+D(i,j-1)+1,\\
+D(i-1,j-1)+cost
+\end{array}
+\right.
+\]
+$cost=0$ if $x_i=y_j$, else substitution cost (lecture often uses $2$).\\
+Weighted form:
 \[
 \begin{aligned}
-D(i,0)&=D(i-1,0)+del[x_i],\quad D(0,j)=D(0,j-1)+ins[y_j],\\
-D(i,j)&=\min\{D(i-1,j)+del[x_i],\ D(i,j-1)+ins[y_j],\ D(i-1,j-1)+sub[x_i,y_j]\}.
+D(i,0)&=D(i-1,0)+del[x_i],\\
+D(0,j)&=D(0,j-1)+ins[y_j],\\
+D_{del}&=D(i-1,j)+del[x_i],\\
+D_{ins}&=D(i,j-1)+ins[y_j],\\
+D_{sub}&=D(i-1,j-1)+sub[x_i,y_j],\\
+D(i,j)&=\min\{D_{del},D_{ins},D_{sub}\}
 \end{aligned}
 \]
 Backtrace stores DEL/INS/SUB-MATCH pointers.\\
-Complexity: time $O(MN)$, memory $O(MN)$ or $O(\min\{M,N\})$ (rolling rows).
+Complexity: time $O(MN)$, memory $O(MN)$ or $O(\min\{M,N\})$.
 
 \subsection*{N-gram Language Modeling}
 \[
-\begin{aligned}
-P(w_1^n)&=\prod_{i=1}^{n}P(w_i\mid w_1^{i-1}),\\
-P(w_i\mid w_1^{i-1})&\approx P(w_i\mid w_{i-(N-1)}^{i-1}),\\
-P_{ML}(w_i\mid w_{i-1})&=\frac{C(w_{i-1},w_i)}{C(w_{i-1})},\quad
-P_{ML}(w_i)=\frac{C(w_i)}{\sum_{w\in V}C(w)},\\
-P(w_1\ldots w_n)&=\prod_{i=1}^{n}P(w_i\mid w_{i-1}),\quad w_0=\langle s\rangle.
-\end{aligned}
+P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_1^{i-1}).
 \]
+\[
+P(w_i\mid w_1^{i-1})\approx P(w_i\mid w_{i-(N-1)}^{i-1}).
+\]
+\[
+P_{ML}(w_i\mid w_{i-1})=\frac{C(w_{i-1},w_i)}{C(w_{i-1})}.
+\]
+\[
+P_{ML}(w_i)=\frac{C(w_i)}{\sum_{w\in V}C(w)}.
+\]
+With sentence markers: $P(w_1\ldots w_n)=\prod_{i=1}^{n}P(w_i\mid w_{i-1})$, $w_0=\langle s\rangle$.
 
 \subsection*{Train/Dev/Test Protocol (L2)}
-Train: fit parameters; Dev: tune model/hyperparameters; Test: one-shot final report.\\
+Train: fit parameters. Dev: tune model/hyperparameters. Test: one-shot final report.\\
 Never tune on test. Workflow: train $\to$ dev tune $\to$ freeze $\to$ test once.
 
 \subsection*{Perplexity (textbook canonical)}
 \[
-\begin{aligned}
-PP(W)&=P(w_1\ldots w_N)^{-1/N}=\exp\!\left(-\frac{1}{N}\sum_{i=1}^{N}\log p_i\right)=2^{H(W)},\\
-p_i&=P(w_i\mid w_1^{i-1}).
-\end{aligned}
+PP(W)=P(w_1\ldots w_N)^{-1/N}.
+\]
+\[
+PP(W)=\exp\!\left(-\frac{1}{N}\sum_{i=1}^{N}\log p_i\right)=2^{H(W)}.
+\]
+\[
+p_i=P(w_i\mid w_1^{i-1}).
 \]
 Interpretation: inverse normalized test probability (effective branching factor).\\
 Compare PP only under same tokenizer/preprocessing/test split.
 
 \subsection*{Shannon Visualization (1948)}
-Bigram generation sketch: sample $w\sim p(w\mid\langle s\rangle)$,\\
-then repeat $x\sim p(x\mid w)$, set $w\leftarrow x$, stop at $\langle/ s\rangle$.
+Bigram generation sketch:\\
+sample $w\sim p(w\mid\langle s\rangle)$, then $x\sim p(x\mid w)$, set $w\leftarrow x$, stop at $\langle/ s\rangle$.
 
 \subsection*{Smoothing / Backoff / Interpolation}
 \[
-\begin{aligned}
-P_{add1}(w_i\mid w_{i-1})&=\frac{C(w_{i-1},w_i)+1}{C(w_{i-1})+|V|},\\
-P_{addk}(w_i\mid w_{i-1})&=\frac{C(w_{i-1},w_i)+k}{C(w_{i-1})+k|V|},\quad 0<k<1.
-\end{aligned}
+P_{add1}(w_i\mid w_{i-1})=
+\frac{C(w_{i-1},w_i)+1}{C(w_{i-1})+|V|}.
 \]
+\[
+P_{addk}(w_i\mid w_{i-1})=
+\frac{C(w_{i-1},w_i)+k}{C(w_{i-1})+k|V|}.
+\]
+with $0<k<1$.
 Linear interpolation (trigram):
 \[
 \begin{aligned}
-P(w_i\mid w_{i-2},w_{i-1})={}&\lambda_3P_{ML}(w_i\mid w_{i-2},w_{i-1})\\
-&+\lambda_2P_{ML}(w_i\mid w_{i-1})+\lambda_1P_{ML}(w_i),\\
-&\lambda_1+\lambda_2+\lambda_3=1.
+P_3&=P_{ML}(w_i\mid w_{i-2},w_{i-1}),\\
+P_2&=P_{ML}(w_i\mid w_{i-1}),\qquad
+P_1=P_{ML}(w_i).
 \end{aligned}
 \]
-Katz backoff: if higher-order count is zero, back off to lower order\\
-with discounting so mass stays normalized.\\
-Stupid backoff (lecture):
+\[
+\begin{aligned}
+h_i&=(w_{i-2},w_{i-1}),\\
+P(w_i\mid h_i)&=\lambda_3P_3+\lambda_2P_2+\lambda_1P_1
+\end{aligned}
+\]
+\[
+\begin{aligned}
+\lambda_1+\lambda_2+\lambda_3&=1.
+\end{aligned}
+\]
+Katz backoff: if higher-order count is zero, back off to lower order with discounting.\\
+Stupid backoff (score, not true probability):
 \[
 S(w_i\mid h)=
 \begin{cases}
-\dfrac{count(h,w_i)}{count(h)},&count(h,w_i)>0,\\
-0.4\,S(w_i\mid h'),&\text{otherwise},
+c/count(h), & c>0,\\
+0.4\,S(w_i\mid h'), & \text{otherwise}.
 \end{cases}
 \]
-where $h'$ is the shorter history; this is a scoring rule, not a true normalized probability.
+where $c=c(h,w_i)$.
 
 \subsection*{A1 Repro (L2 core)}
-Q2(a) add-one bigram: $P(Sam\mid am)=\dfrac{C(am,Sam)+1}{C(am)+|V|}=\dfrac{3}{14}$.\\
-Q2(b) interpolation in assignment: $P(Sam\mid am)=\dfrac{31}{75}$.\\
+Q2(a): $P(Sam\mid am)=\dfrac{C(am,Sam)+1}{C(am)+|V|}=\dfrac{3}{14}$.\\
+Q2(b): $P(Sam\mid am)=\dfrac{31}{75}$.\\
 Q3 no EOS: for fixed length $\ell$, $\sum_{w_{1:\ell}}P(w_{1:\ell})=1$,\\
 but not a valid global distribution across all lengths.
 
