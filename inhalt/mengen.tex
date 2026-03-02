@@ -1,116 +1,99 @@
 \section{L2: Min Edit Distance, N-grams, Perplexity, Smoothing}
+
 \subsection*{Min Edit Distance (Levenshtein)}
-Given strings $X=x_1\ldots x_M$, $Y=y_1\ldots y_N$.
+Given $X=x_1\ldots x_M$, $Y=y_1\ldots y_N$, define $D(i,j)$ = dist$(X[1..i],Y[1..j])$.\\
+Initialization:
 \[
 D(i,0)=i,\qquad D(0,j)=j.
 \]
+Recurrence (lecture Levenshtein: ins/del $=1$, sub $=2$):
 \[
-D(i,j)=\min\left\{
-\begin{array}{l}
-D(i-1,j)+1,\\
-D(i,j-1)+1,\\
-D(i-1,j-1)+cost
-\end{array}
-\right.
+D(i,j)=\min\Big(
+D(i-1,j)+1,\;
+D(i,j-1)+1,\;
+D(i-1,j-1)+
+\begin{cases}
+0 & x_i=y_j\\
+2 & x_i\neq y_j
+\end{cases}
+\Big).
 \]
-$cost=0$ if $x_i=y_j$, else substitution cost (lecture often uses $2$).\\
-Weighted form:
-\[
-\begin{aligned}
-D(i,0)&=D(i-1,0)+del[x_i],\\
-D(0,j)&=D(0,j-1)+ins[y_j],\\
-D_{del}&=D(i-1,j)+del[x_i],\\
-D_{ins}&=D(i,j-1)+ins[y_j],\\
-D_{sub}&=D(i-1,j-1)+sub[x_i,y_j],\\
-D(i,j)&=\min\{D_{del},D_{ins},D_{sub}\}
-\end{aligned}
-\]
-Backtrace stores DEL/INS/SUB-MATCH pointers.\\
-Complexity: time $O(MN)$, memory $O(MN)$ or $O(\min\{M,N\})$.
+Backtrace: store pointer $\in\{\text{LEFT (ins)},\text{DOWN (del)},\text{DIAG (sub/match)}\}$ to recover alignment.\\
+Complexity: time $O(MN)$; space $O(MN)$ (or $O(\min\{M,N\})$ for distance only); backtrace $O(M+N)$.\\
+Weighted edit distance: replace constants by $del[x_i],\,ins[y_j],\,sub[x_i,y_j]$.\\
+\textbf{Common traps:} substitution cost is often $2$ (not $1$); backtrace is \emph{not} $O(MN)$ extra.
 
 \subsection*{N-gram Language Modeling}
+Chain rule:
 \[
 P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_1^{i-1}).
 \]
+Markov (N-gram) assumption:
 \[
 P(w_i\mid w_1^{i-1})\approx P(w_i\mid w_{i-(N-1)}^{i-1}).
 \]
+Bigram MLE:
 \[
-P_{ML}(w_i\mid w_{i-1})=\frac{C(w_{i-1},w_i)}{C(w_{i-1})}.
+P_{\text{ML}}(w_i\mid w_{i-1})=\frac{C(w_{i-1},w_i)}{C(w_{i-1})},
+\qquad
+P_{\text{ML}}(w)=\frac{C(w)}{\sum_{u\in V}C(u)}.
 \]
+Sentence markers: treat $\langle s\rangle,\langle/ s\rangle$ as tokens; bigram sentence prob
 \[
-P_{ML}(w_i)=\frac{C(w_i)}{\sum_{w\in V}C(w)}.
+P(w_1\ldots w_n)=\prod_{i=1}^{n+1}P(w_i\mid w_{i-1}),\quad w_0=\langle s\rangle,\; w_{n+1}=\langle/ s\rangle.
 \]
-With sentence markers: $P(w_1\ldots w_n)=\prod_{i=1}^{n}P(w_i\mid w_{i-1})$, $w_0=\langle s\rangle$.
+Log-space (avoid underflow): $\log\prod_i p_i=\sum_i\log p_i$.\\
+\textbf{Common traps:} forgetting $\langle/ s\rangle$ breaks a global distribution across lengths; MLE gives zeros for unseen n-grams.
 
-\subsection*{Train/Dev/Test Protocol (L2)}
-Train: fit parameters. Dev: tune model/hyperparameters. Test: one-shot final report.\\
-Never tune on test. Workflow: train $\to$ dev tune $\to$ freeze $\to$ test once.
+\subsection*{Train/Dev/Test Protocol (for PP + smoothing)}
+Train: fit counts/params. Dev (held-out): tune $\lambda$, backoff/discount, preprocessing. Test: one-shot final report.\\
+Never tune on test; compare PP only under same tokenization/preprocessing/split.\\
+\textbf{Common traps:} leakage (using test for tuning) gives fake PP improvements.
 
-\subsection*{Perplexity (textbook canonical)}
+\subsection*{Perplexity}
+Canonical:
 \[
 PP(W)=P(w_1\ldots w_N)^{-1/N}.
 \]
+Compute via logs:
 \[
-PP(W)=\exp\!\left(-\frac{1}{N}\sum_{i=1}^{N}\log p_i\right)=2^{H(W)}.
+PP(W)=\exp\!\Big(-\frac{1}{N}\sum_{i=1}^{N}\log p_i\Big),\quad p_i=P(w_i\mid w_1^{i-1}).
 \]
-\[
-p_i=P(w_i\mid w_1^{i-1}).
-\]
-Interpretation: inverse normalized test probability (effective branching factor).\\
-Compare PP only under same tokenizer/preprocessing/test split.
-
-\subsection*{Shannon Visualization (1948)}
-Bigram generation sketch:\\
-sample $w\sim p(w\mid\langle s\rangle)$, then $x\sim p(x\mid w)$, set $w\leftarrow x$, stop at $\langle/ s\rangle$.
+Lower PP $\Leftrightarrow$ higher test probability. If any $p_i=0$, then $PP=\infty$ (must smooth).\\
+\textbf{Common traps:} PP is meaningless across different tokenizers; unsmoothed LM makes PP blow up.
 
 \subsection*{Smoothing / Backoff / Interpolation}
+Add-one (Laplace) bigram:
 \[
-P_{add1}(w_i\mid w_{i-1})=
-\frac{C(w_{i-1},w_i)+1}{C(w_{i-1})+|V|}.
+P_{\text{add1}}(w\mid h)=\frac{C(h,w)+1}{C(h)+|V|}.
 \]
+Add-$k$ ($0<k<1$):
 \[
-P_{addk}(w_i\mid w_{i-1})=
-\frac{C(w_{i-1},w_i)+k}{C(w_{i-1})+k|V|}.
+P_{\text{add}k}(w\mid h)=\frac{C(h,w)+k}{C(h)+k|V|}.
 \]
-with $0<k<1$.
-Linear interpolation (trigram):
+Linear interpolation (e.g., trigram):
 \[
-\begin{aligned}
-P_3&=P_{ML}(w_i\mid w_{i-2},w_{i-1}),\\
-P_2&=P_{ML}(w_i\mid w_{i-1}),\qquad
-P_1=P_{ML}(w_i).
-\end{aligned}
+P(w_i\mid w_{i-2},w_{i-1})=\lambda_3P_3+\lambda_2P_2+\lambda_1P_1,\quad \sum_r\lambda_r=1,
 \]
+where $P_3=P_{\text{ML}}(w_i\mid w_{i-2},w_{i-1}),\;P_2=P_{\text{ML}}(w_i\mid w_{i-1}),\;P_1=P_{\text{ML}}(w_i).$\\
+Backoff: if higher-order count is 0, use lower-order; proper backoff needs discounting (e.g., Katz).\\
+Stupid backoff (score, not probability):
 \[
-\begin{aligned}
-h_i&=(w_{i-2},w_{i-1}),\\
-P(w_i\mid h_i)&=\lambda_3P_3+\lambda_2P_2+\lambda_1P_1
-\end{aligned}
-\]
-\[
-\begin{aligned}
-\lambda_1+\lambda_2+\lambda_3&=1.
-\end{aligned}
-\]
-Katz backoff: if higher-order count is zero, back off to lower order with discounting.\\
-Stupid backoff (score, not true probability):
-\[
-S(w_i\mid h)=
+S(w\mid h)=
 \begin{cases}
-c/count(h), & c>0,\\
-0.4\,S(w_i\mid h'), & \text{otherwise}.
+\frac{C(h,w)}{C(h)} & C(h,w)>0\\
+\alpha\, S(w\mid h') & \text{otherwise}
 \end{cases}
+\quad (\alpha\approx 0.4,\; h'=\text{drop oldest context}).
 \]
-where $c=c(h,w_i)$.
+\textbf{Common traps:} add-1 too aggressive for large $|V|$; do not use stupid backoff to compute true PP.
 
 \subsection*{A1 Repro (L2 core)}
-Q2(a): $P(Sam\mid am)=\dfrac{C(am,Sam)+1}{C(am)+|V|}=\dfrac{3}{14}$.\\
-Q2(b): $P(Sam\mid am)=\dfrac{31}{75}$.\\
-Q3 no EOS: for fixed length $\ell$, $\sum_{w_{1:\ell}}P(w_{1:\ell})=1$,\\
-but not a valid global distribution across all lengths.
+Q2(a) add-one: $P(Sam\mid am)=\dfrac{C(am,Sam)+1}{C(am)+|V|}=\dfrac{3}{14}$.\\
+Q2(b) interpolation: $P(Sam\mid am)=\dfrac{31}{75}$.\\
+Q3 no $\langle/ s\rangle$: for fixed length $\ell$, $\sum_{w_{1:\ell}}P(w_{1:\ell})=1$, but not a valid global distribution across all lengths.
 
 \subsection*{L2 Pitfalls}
-- Unsmoothed models assign zero probability to unseen n-grams.\\
-- Add-1 is often too aggressive for large vocabularies.\\
-- Tune interpolation/backoff settings on held-out data, not test.
+- Unsmoothed LM $\Rightarrow$ zero prob for unseen n-grams $\Rightarrow$ PP blows up.\\
+- Tune $\lambda$/discount on dev (held-out), not test.\\
+- PP comparisons require identical tokenization + preprocessing + sentence markers.

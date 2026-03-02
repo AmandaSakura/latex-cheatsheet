@@ -28,7 +28,7 @@ Clitic: syntactically word-like but phonologically attached (e.g., \texttt{'ve})
 Unicode assigns code points (e.g., \texttt{a}=U+0061); code point $\neq$ glyph.\\
 UTF-8: variable-length, ASCII-compatible.\\
 ASCII (U+0000--U+007F) = 1 byte.\\
-Most common CJK $\approx$ 3 bytes; emoji often 4 bytes (depends on code point range).\\
+CJK typically 3 bytes; emoji often 4 bytes (range-dependent).\\
 Python 3 strings = Unicode code points; \texttt{len()} counts code points (not bytes).\\
 \textbf{Common traps:} mixing byte-level and code-point operations causes silent bugs.
 
