@@ -1,6 +1,6 @@
 \section{L2: Min Edit Distance, N-grams, Perplexity, Smoothing}
-\subsection*{Min Edit Distance (Levenshtein setup)}
-Given strings $X=x_1\ldots x_M$, $Y=y_1\ldots y_N$:\\
+\subsection*{Min Edit Distance (Levenshtein)}
+Given strings $X=x_1\ldots x_M$, $Y=y_1\ldots y_N$:
 \[
 D(i,0)=i,\qquad D(0,j)=j.
 \]
@@ -13,16 +13,12 @@ D(i,j)=\min\{\\
 \}.
 \end{array}
 \]
-with $cost=0$ if $x_i=y_j$, else substitution cost (often $2$ in lecture Levenshtein examples).\\
-Weighted version:\\
+$cost=0$ if $x_i=y_j$, else substitution cost (lecture examples may use $2$).\\
+Weighted form:
 \[
 \begin{array}{l}
 D(i,0)=D(i-1,0)+del[x_i],\\
-D(0,j)=D(0,j-1)+ins[y_j].
-\end{array}
-\]
-\[
-\begin{array}{l}
+D(0,j)=D(0,j-1)+ins[y_j],\\
 D(i,j)=\min\{\\
 \quad D(i-1,j)+del[x_i],\\
 \quad D(i,j-1)+ins[y_j],\\
@@ -30,46 +26,61 @@ D(i,j)=\min\{\\
 \}.
 \end{array}
 \]
+Backtrace: store operation pointer (DEL/INS/SUB-MATCH) per cell.\\
+Complexity: time $O(MN)$; memory $O(MN)$ or $O(\min\{M,N\})$ with rolling rows.
 
-\subsection*{Chain Rule and N-gram Approximation}
+\subsection*{N-gram Language Modeling}
+Chain rule:
 \[
-P(w_1^n)=\prod_{i=1}^{n} P(w_i\mid w_1^{i-1}).
+P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_1^{i-1}).
 \]
+N-gram approximation:
 \[
 P(w_i\mid w_1^{i-1})\approx P(w_i\mid w_{i-(N-1)}^{i-1}).
 \]
-Markov approximation to last $N-1$ tokens.\\
-MLE bigram:\\
+MLE bigram/unigram:
 \[
-P_{ML}(w_i\mid w_{i-1})=\frac{C(w_{i-1},w_i)}{C(w_{i-1})}.
+P_{ML}(w_i\mid w_{i-1})=\frac{C(w_{i-1},w_i)}{C(w_{i-1})},
+\]
+\[
+P_{ML}(w_i)=\frac{C(w_i)}{\sum_{w\in V}C(w)}.
+\]
+With sentence markers:
+\[
+P(w_1\ldots w_n)=\prod_{i=1}^{n}P(w_i\mid w_{i-1}).
+\]
+\[
+w_0=\langle s\rangle.
 \]
 
-\subsection*{Perplexity (canonical)}
-For test sequence $W=w_1\ldots w_N$:\\
+\subsection*{Perplexity (textbook canonical)}
+For test sequence $W=w_1\ldots w_N$:
 \[
-\begin{array}{l}
-PP(W)=P(w_1\ldots w_N)^{-1/N}\\
-\qquad=\left(\prod_{i=1}^{N}P(w_i\mid w_1^{i-1})\right)^{-1/N}.
-\end{array}
+PP(W)=P(w_1\ldots w_N)^{-1/N}.
 \]
 \[
-\begin{array}{l}
-PP(W)=\exp\!\left(-\frac{1}{N}\sum_{i=1}^{N}\log\right.\\
-\left.P(w_i\mid w_1^{i-1})\right).
-\end{array}
+PP(W)=\exp\!\left(-\frac{1}{N}\sum_{i=1}^{N}\log p_i\right).
 \]
-Equivalent base-2 form: $PP(W)=2^{H(W)}$.
+\[
+p_i=P(w_i\mid w_1^{i-1}).
+\]
+\[
+PP(W)=2^{H(W)}.
+\]
+Lower PP is better only under same tokenizer, preprocessing, and test split.
 
-\subsection*{Smoothing, Backoff, Interpolation}
-Add-1 (Laplace) bigram:\\
+\subsection*{Smoothing / Backoff / Interpolation}
+Laplace (add-1):
 \[
-P_{add1}(w_i\mid w_{i-1})=\frac{C(w_{i-1},w_i)+1}{C(w_{i-1})+|V|}.
+P_{add1}(w_i\mid w_{i-1})=
+\frac{C(w_{i-1},w_i)+1}{C(w_{i-1})+|V|}.
 \]
-Add-$k$ ($0<k<1$):\\
+Add-$k$ ($0<k<1$):
 \[
-P_{addk}(w_i\mid w_{i-1})=\frac{C(w_{i-1},w_i)+k}{C(w_{i-1})+k|V|}.
+P_{addk}(w_i\mid w_{i-1})=
+\frac{C(w_{i-1},w_i)+k}{C(w_{i-1})+k|V|}.
 \]
-Linear interpolation (trigram example):\\
+Linear interpolation (trigram):
 \[
 \begin{array}{l}
 P(w_i\mid w_{i-2},w_{i-1})=\\
@@ -77,10 +88,27 @@ P(w_i\mid w_{i-2},w_{i-1})=\\
 \lambda_2P_{ML}(w_i\mid w_{i-1})+\lambda_1P_{ML}(w_i),
 \end{array}
 \]
-$\lambda_1+\lambda_2+\lambda_3=1$.\\
-Backoff idea: if higher-order count is zero, use lower-order model (discount/weight required; "stupid backoff" uses fixed scaling).
+\[
+\lambda_1+\lambda_2+\lambda_3=1.
+\]
+Backoff principle: when higher-order count is zero, use lower-order model (usually with discounting).
+
+\subsection*{A1 Repro (L2 core)}
+Q2(a) add-one bigram:
+\[
+P(Sam\mid am)=\frac{C(am,Sam)+1}{C(am)+|V|}=\frac{3}{14}.
+\]
+Q2(b) interpolation in assignment:
+\[
+P(Sam\mid am)=\frac{31}{75}.
+\]
+Q3 no EOS: for fixed length $\ell$,
+\[
+\sum_{w_{1:\ell}}P(w_{1:\ell})=1,
+\]
+but across all lengths it is not normalizable.
 
 \subsection*{L2 Pitfalls}
-- Unsmoothed model can assign zero probability to test set, making perplexity undefined/infinite.\\
-- Add-1 is usually too blunt for large-vocabulary N-grams; interpolation/backoff is preferred.\\
-- Compare perplexity only under the same tokenizer and evaluation protocol.
+- Unsmoothed model assigns zero probability to unseen n-grams.\\
+- Add-1 is often too aggressive for large vocabularies.\\
+- Tune interpolation weights on held-out data, not test set.

@@ -1,33 +1,53 @@
 \section{L1 Foundations: Tokens, Unicode, BPE, Regex}
 \subsection*{Token Basics}
-Type: element of vocabulary $V$; vocabulary size $|V|$.\\
-Token/instance: one occurrence in running text; total instances $N$.\\
-Corpus growth (Heaps/Herdan law): $|V| \approx K N^{\beta}$ with $\beta \approx 0.5$.\\
-Practical note: token budget differs by language; non-English text is often split into more tokens.
+Type: unique element in vocabulary $V$; size $|V|$.\\
+Token (instance): one occurrence in corpus; total count $N$.\\
+Heaps/Herdan law (lecture statement):
+\[
+|V|\approx KN^{\beta},\qquad \beta\approx 0.5.
+\]
+Type-token ratio $|V|/N$ decreases as corpus grows.
 
-\subsection*{Unicode and UTF-8}
-Unicode assigns each character a code point (e.g., \texttt{a} is U+0061).\\
-Code point range: U+0000 to U+10FFFF (about 1.1M possible).\\
-UTF-8 is variable-length:\\
-- ASCII range (first 127 code points): 1 byte.\\
-- Other code points: 2, 3, or 4 bytes.\\
-Python 3 strings are Unicode code points; \texttt{len()} counts code points, not bytes.
+\subsection*{Language and Token Budget}
+Whitespace tokenization is language-dependent; not universal.\\
+For Chinese/Japanese/Thai, segmentation choices change token count strongly.\\
+Practical exam note: same sentence meaning can consume very different token budgets across tokenizers/languages.
 
-\subsection*{Byte Pair Encoding (BPE)}
-\textbf{Learner (train-time):} repeat for $k$ merges:\\
+\subsection*{Unicode, Code Points, UTF-8}
+Unicode maps symbols to code points (e.g., \texttt{a}=U+0061).\\
+Code point is not glyph; rendering belongs to font + shaping.\\
+UTF-8 is variable length and ASCII-compatible:
+\[
+\begin{array}{l}
+\text{1-byte: }0xxxxxxx,\\
+\text{2-byte: }110xxxxx\ 10xxxxxx,\\
+\text{3-byte: }1110xxxx\ 10xxxxxx\ 10xxxxxx,\\
+\text{4-byte: }11110xxx\ 10xxxxxx\\
+\text{\phantom{4-byte: }}10xxxxxx\ 10xxxxxx.
+\end{array}
+\]
+ASCII (first 127 code points) uses 1 byte in UTF-8.\\
+Python 3 strings are Unicode code points; \texttt{len()} counts code points (not bytes).
+
+\subsection*{BPE (Byte Pair Encoding)}
+Train-time learner (repeat for $k$ merges):
 1. Find most frequent adjacent pair $(A,B)$.\\
-2. Add merged token $(AB)$ to vocabulary.\\
-3. Replace all occurrences of $A\ B$ by $AB$ in corpus.\\
-\textbf{Encoder (test-time):} start from character/byte sequence, then apply learned merges greedily in learned order.
+2. Add merged token $AB$ to $V$.\\
+3. Replace each $A\ B$ by $AB$.\\
+Test-time encoder: start from chars/bytes.\\
+Apply learned merges greedily in learned order.\\
+Byte-level BPE uses alphabet size 256 (all bytes), avoiding byte-level OOV.
 
-\subsection*{Regex Essentials (for tokenization/pretokenization)}
-Classes: \verb|[abc]|, ranges \verb|[A-Z]|, negation \verb|[^0-9]|.\\
+\subsection*{Regex Essentials (Tokenization/Cleanup)}
+Character classes: \verb|[abc]|, \verb|[A-Z]|, \verb|[^0-9]|.\\
 Quantifiers: \verb|*| (0+), \verb|+| (1+), \verb|?| (0/1), \verb|{m,n}|.\\
-Anchors: \verb|^| start, \verb|$| end, \verb|\b| word boundary, \verb|.| wildcard.\\
-Groups: capturing \verb|(...)| for substitution \verb|re.sub(...)|; non-capturing \verb|(?:...)|.\\
-Lookahead: positive \verb|(?=...)| and negative \verb|(?!...)| keep boundary conditions without consuming text.
+Anchors: \verb|^|, \verb|$|, boundary \verb|\b|, wildcard \verb|.|.\\
+Grouping: capturing \verb|(...)|, non-capturing \verb|(?:...)|.\\
+Lookahead: positive \verb|(?=...)|, negative \verb|(?!...)|.\\
+Substitution API: \texttt{re.sub(...)}.\\
+Capture-group reorder: group2 then group1.
 
 \subsection*{L1 Pitfalls}
-- Whitespace tokenization fails for many scripts (e.g., Chinese/Japanese/Thai).\\
-- Periods are ambiguous (sentence end vs abbreviation/number).\\
-- UTF-8 bytes and Unicode code points are different units; avoid mixing them in formulas/code.
+- Sentence boundary ambiguity: period can be abbreviation or EOS.\\
+- Tokenizer mismatch invalidates direct perplexity/model comparison.\\
+- Mixing byte-level and code-point operations causes silent bugs.

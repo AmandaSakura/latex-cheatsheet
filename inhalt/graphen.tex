@@ -1,18 +1,22 @@
 \section{L5+L6: Neural Nets, Transformer, LLM, A2 Repro}
-\subsection*{Feedforward Neural LM / Classifier Skeleton}
-Neural unit:\\
+\subsection*{Feedforward Neural LM / Classifier}
+Neural unit:
 \[
-z=w\cdot x+b,\qquad a=f(z).
+z=w\cdot x+b,
+\qquad
+ a=f(z).
 \]
-Activation choices:\\
+Activation choices:
 \[
-\sigma(z)=\frac{1}{1+e^{-z}},\qquad
-\tanh(z)=\frac{e^z-e^{-z}}{e^z+e^{-z}}.
+\sigma(z)=\frac{1}{1+e^{-z}},
+\]
+\[
+\tanh(z)=\frac{e^z-e^{-z}}{e^z+e^{-z}},
 \]
 \[
 \mathrm{ReLU}(z)=\max(0,z).
 \]
-Feedforward LM pattern:\\
+Feedforward LM skeleton:
 \[
 x_t=[e_{w_{t-n+1}};\ldots;e_{w_{t-1}}],
 \]
@@ -36,40 +40,57 @@ L_{CE}(t)=-\log y_t[w_{t+1}].
 \[
 \frac{d}{dx}u(v(w(x)))=\frac{du}{dv}\frac{dv}{dw}\frac{dw}{dx}.
 \]
-Useful derivatives:\\
+Derivatives used in lecture:
 \[
-\frac{d\sigma(z)}{dz}=\sigma(z)(1-\sigma(z)).
+\frac{d\sigma(z)}{dz}=\sigma(z)(1-\sigma(z)),
 \]
 \[
 \frac{d\tanh(z)}{dz}=1-\tanh^2(z),
 \]
 \[
-\frac{d\,\mathrm{ReLU}(z)}{dz}=\begin{cases}0,&z<0\\1,&z\ge 0\end{cases}
+\frac{d\,\mathrm{ReLU}(z)}{dz}=
+\begin{cases}
+0,&z<0\\
+1,&z\ge 0
+\end{cases}
 \]
-SGD update: $\theta\leftarrow\theta-\eta\nabla_\theta L$.
+SGD update:
+\[
+\theta\leftarrow\theta-\eta\nabla_\theta L.
+\]
 
 \subsection*{Decoder-only LLM and Decoding}
-Autoregressive factorization:\\
+Autoregressive factorization:
 \[
 P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_{<i}).
 \]
-Greedy decoding:\\
+Greedy decoding:
 \[
 \hat w_t=\arg\max_{w\in V}P(w\mid w_{<t}).
 \]
-Logits $u$ to probabilities: $y=\mathrm{softmax}(u)$.
+Logits to probabilities:
+\[
+y=\mathrm{softmax}(u).
+\]
+Temperature sampling:
+\[
+\mathrm{softmax}(u/\tau).
+\]
+\[
+\tau\uparrow \Rightarrow \text{flatter distribution}.
+\]
 
 \subsection*{Transformer Attention (canonical)}
-Single-head projections:\\
+Single-head projections:
 \[
 q_i=x_iW^Q,\qquad k_j=x_jW^K.
 \]
 \[
 v_j=x_jW^V.
 \]
-Scaled dot-product attention:\\
+Scaled dot-product attention:
 \[
-score(x_i,x_j)=\frac{q_i\cdot k_j}{\sqrt{d_k}}.
+score(x_i,x_j)=\frac{q_i\cdot k_j}{\sqrt{d_k}},
 \]
 \[
 \alpha_{ij}=\mathrm{softmax}(score(x_i,x_j)),
@@ -77,22 +98,25 @@ score(x_i,x_j)=\frac{q_i\cdot k_j}{\sqrt{d_k}}.
 \[
 a_i=\sum_{j\le i}\alpha_{ij}v_j.
 \]
-Multi-head (head index $c=1..h$):\\
+Multi-head (head index $c=1,\ldots,h$):
 \[
-q_i^c=x_iW^{Q_c},\qquad k_j^c=x_jW^{K_c}.
+q_i^c=x_iW^{Q_c}.
 \]
 \[
-v_j^c=x_jW^{V_c},
+k_j^c=x_jW^{K_c}.
 \]
 \[
-head_i^c=\sum_{j\le i}\alpha_{ij}^c v_j^c.
+v_j^c=x_jW^{V_c}.
+\]
+\[
+head_i^c=\sum_{j\le i}\alpha_{ij}^c v_j^c,
 \]
 \[
 a_i=(head_i^1\oplus\cdots\oplus head_i^h)W^O.
 \]
-LayerNorm (Eq. 9.21-9.24 form):\\
+LayerNorm (Eq. 9.21--9.24 style):
 \[
-\mu=\frac{1}{d}\sum_{r=1}^{d}x_r.
+\mu=\frac{1}{d}\sum_{r=1}^{d}x_r,
 \]
 \[
 \sigma=\sqrt{\frac{1}{d}\sum_{r=1}^{d}(x_r-\mu)^2},
@@ -100,58 +124,71 @@ LayerNorm (Eq. 9.21-9.24 form):\\
 \[
 \mathrm{LayerNorm}(x)=\gamma\frac{x-\mu}{\sigma}+\beta.
 \]
-Transformer block (pre-norm residual stream, Eq. 9.25-9.30):\\
+Transformer block (pre-norm residual stream):
 \[
-t_i^1=\mathrm{LayerNorm}(x_i).
+t_i^1=LN(x_i).
 \]
 \[
-t_i^2=\mathrm{MHA}(t_i^1,\{x_1^1,\ldots,x_N^1\}),
+t_i^2=MHA(t_i^1,\{x_1^1,\ldots,x_N^1\}).
 \]
 \[
-t_i^3=t_i^2+x_i.
+t_i^3=t_i^2+x_i,\qquad t_i^4=LN(t_i^3).
 \]
 \[
-t_i^4=\mathrm{LayerNorm}(t_i^3),
-\]
-\[
-t_i^5=\mathrm{FFN}(t_i^4),\qquad h_i=t_i^5+t_i^3.
+t_i^5=FFN(t_i^4),\qquad h_i=t_i^5+t_i^3.
 \]
 
 \subsection*{Post-training Modes and Risks}
 Continued pretraining: continue LM objective on domain corpus.\\
-PEFT: parameter-efficient tuning (e.g., adapter/low-rank style updates).\\
-SFT: supervised fine-tuning on instruction-response pairs.\\
-Perplexity caveat: tokenizer-sensitive; compare only with same tokenization.\\
-Safety quick list: hallucination, privacy leakage, toxicity, representational bias.
+PEFT: tune small adapter/low-rank parameter subset.\\
+SFT: supervised instruction-response fine-tuning.\\
+Perplexity caveat: tokenizer-sensitive; compare only under same tokenization.\\
+Safety quick list: hallucination, privacy leakage, toxicity, representation bias.
 
-\subsection*{A2 Repro (exam-speed)}
+\subsection*{A2 Repro (exam-speed chain)}
 \textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) D, (e) A.\\
-\textbf{Q2(a) SGNS objective:}\\
+\textbf{Q2(a)} SGNS objective:
 \[
 \begin{array}{l}
-\max_{\theta}\sum_{(w,c)\in\mathcal D}\log\sigma(u_c\cdot v_w)\\
-\quad +k\sum_{(w,\cdot)\in\mathcal D}\mathbb E_{c'\sim P_n}\!\left[ \right.\\
-\qquad \left.\log\sigma(-u_{c'}\cdot v_w)\right].
+J(\theta)=
+\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)\\
+\quad +k\sum_{(w,\cdot)\in D}\mathbb E_{c'\sim P_n}[g(w,c')].
 \end{array}
 \]
-Expanded expectation:\\
+\[
+g(w,c')=\log\sigma(-u_{c'}\cdot v_w),\qquad
+\max_\theta J(\theta).
+\]
+Expanded expectation form:
 \[
 \begin{array}{l}
-\max_{\theta}\sum_{(w,c)\in\mathcal D}\log\sigma(u_c\cdot v_w)\\
-\quad +k\sum_{(w,\cdot)\in\mathcal D}\sum_{c'\in V}P_n(c')\\
-\qquad \cdot\log\sigma(-u_{c'}\cdot v_w).
+J(\theta)=
+\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)\\
+\quad +k\sum_{(w,\cdot)\in D}\sum_{c'\in V}P_n(c')\,g(w,c').
 \end{array}
 \]
-\textbf{Q2(b)}\\
+\textbf{Q2(b)}
 \[
-\frac{d}{d\alpha}\log\sigma(\alpha)=\frac{1}{1+e^{\alpha}}=\sigma(-\alpha).
+\frac{d}{d\alpha}\log\sigma(\alpha)=\frac{1}{1+e^{\alpha}}.
 \]
-\textbf{Q2(c)} For one pair with $\alpha=u_0\cdot v_1$,\\
-optimum: $\alpha^*=\log\dfrac{A}{B}$.\\
-\textbf{Q2(d)} With unigram negative sampling, $\alpha^*=PMI(1,0)-\log k$.\\
-\textbf{Q2(e)} Use $0<\beta<1$ in $P_n(w)\propto P_{unigram}(w)^\beta$; common choice $\beta=0.75$.
+\[
+\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha).
+\]
+\textbf{Q2(c)} for one pair ($\alpha=u_0\cdot v_1$):
+\[
+\alpha^*=\log\frac{A}{B}.
+\]
+\textbf{Q2(d)} with negative sampling:
+\[
+\alpha^*=PMI(1,0)-\log k.
+\]
+\textbf{Q2(e)} choose $0<\beta<1$ in
+\[
+P_n(w)\propto P_{unigram}(w)^\beta.
+\]
+common choice $\beta=0.75$.
 
 \subsection*{L5/L6 Pitfalls}
-- Backprop errors usually come from wrong chain-rule path or shape mismatch.\\
-- Attention masking/causal direction mistakes break autoregressive decoding.\\
-- Report LM results with tokenizer and decoding setting; otherwise numbers are not comparable.
+- Most backprop bugs are wrong shape or wrong chain path.\\
+- Wrong causal mask leaks future tokens and breaks autoregressive eval.\\
+- Always report tokenizer and decoding setup with LM metrics.

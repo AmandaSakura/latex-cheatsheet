@@ -1,67 +1,90 @@
 \section{L3: Logistic Regression, Optimization, Evaluation}
 \subsection*{Model and Decision Rule}
-Binary logistic regression:\\
+Binary logistic regression:
 \[
-\hat y = \sigma(w\cdot x+b),\qquad
+\hat y=\sigma(w\cdot x+b),\qquad
 \sigma(z)=\frac{1}{1+e^{-z}}.
 \]
 \[
 p(y=1\mid x)=\hat y,\qquad p(y=0\mid x)=1-\hat y.
 \]
-Classifier with threshold $0.5$:\\
+Classifier (threshold $0.5$):
 \[
-\hat y_{cls}=\begin{cases}
-1,&\sigma(w\cdot x+b)\ge 0.5\\
-0,&\text{otherwise}
-\end{cases}.
+\hat y_{cls}=\mathbf{1}[\sigma(w\cdot x+b)\ge 0.5],
 \]
-Decision boundary: $w\cdot x+b=0$.\\
+decision boundary $w\cdot x+b=0$.
 
 \subsection*{Cross-Entropy / NLL}
-Single example:\\
+Single-example binary CE:
 \[
-L_{CE}(\hat y,y)=-\big[y\log\hat y+(1-y)\log(1-\hat y)\big].
+L_{CE}(\hat y,y)=
+-\left[y\log\hat y+(1-y)\log(1-\hat y)\right].
 \]
-Dataset objective:\\
+Dataset objective:
 \[
-J(w,b)=\sum_{i=1}^{m}L_{CE}(\hat y^{(i)},y^{(i)}).
+J(w,b)=\sum_{i=1}^{m}L_{CE}^{(i)},
+\qquad
+\bar J=\frac{1}{m}\sum_{i=1}^{m}L_{CE}^{(i)}.
+\]
+Equivalent NLL view:
+\[
+L_{CE}=-\log p(y\mid x;w,b).
 \]
 
 \subsection*{Gradient and SGD}
-For one example (textbook Eq. form):\\
+For one sample $(x,y)$:
 \[
-\frac{\partial L_{CE}}{\partial w_j}=\big(\sigma(w\cdot x+b)-y\big)x_j.
+\frac{\partial L_{CE}}{\partial w_j}=
+\big(\sigma(w\cdot x+b)-y\big)x_j,
 \]
 \[
 \frac{\partial L_{CE}}{\partial b}=\sigma(w\cdot x+b)-y.
 \]
-SGD update:\\
+Vector form:
 \[
-w_j\leftarrow w_j-\eta\frac{\partial L}{\partial w_j}.
+\nabla_w L=(\sigma(w\cdot x+b)-y)x.
 \]
+Updates:
 \[
+w\leftarrow w-\eta\nabla_w L,
+\qquad
 b\leftarrow b-\eta\frac{\partial L}{\partial b}.
 \]
-Vector form: $\theta\leftarrow\theta-\eta\nabla_\theta L$.
+Mini-batch SGD: replace single-sample gradients by batch mean gradients.
 
-\subsection*{Confusion-Matrix Metrics}
+\subsection*{Evaluation Metrics}
 \[
 \text{Accuracy}=\frac{TP+TN}{TP+TN+FP+FN}.
 \]
 \[
-\text{Precision}=\frac{TP}{TP+FP}.
+\text{Precision}=\frac{TP}{TP+FP},
 \]
 \[
 \text{Recall}=\frac{TP}{TP+FN}.
 \]
 \[
-F_1=\frac{2\,\text{Precision}\cdot\text{Recall}}{\text{Precision}+\text{Recall}}.
+F_1=\frac{2\cdot\text{Precision}\cdot\text{Recall}}
+{\text{Precision}+\text{Recall}}.
 \]
-Multi-class aggregation:\\
-- Macro: average class-wise metrics equally.\\
-- Micro: aggregate counts first, then compute metric.
+Macro: average class-wise scores equally.\\
+Micro: aggregate counts first, then compute metric.
+
+\subsection*{A1 Repro (L3 core)}
+Assignment notation:
+\[
+\begin{array}{l}
+\ell^{(i)}(\theta)= -\Big[
+ y^{(i)}\log\sigma(\theta\cdot\phi(x^{(i)}))\\
+\quad +(1-y^{(i)})\log\!\left(1-\sigma(\theta\cdot\phi(x^{(i)}))\right)
+\Big].
+\end{array}
+\]
+\[
+\nabla_\theta\ell^{(i)}=
+\left(\sigma(\theta\cdot\phi(x^{(i)}))-y^{(i)}\right)\phi(x^{(i)}).
+\]
 
 \subsection*{L3 Pitfalls}
-- Accuracy can be misleading under class imbalance; report precision/recall/$F_1$.\\
-- Learning rate too high overshoots; too low converges very slowly.\\
-- Feature scaling/representation quality strongly affects convergence and boundary quality.
+- Accuracy can be misleading under heavy class imbalance.\\
+- Too-large learning rate diverges; too-small learning rate stalls.\\
+- Feature scaling/representation quality strongly affects convergence.

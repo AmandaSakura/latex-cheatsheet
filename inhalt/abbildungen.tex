@@ -1,90 +1,96 @@
 \section{L4: Naive Bayes, Vectors, SGNS, A1 Repro}
-\subsection*{Multinomial Naive Bayes (Text Classification)}
-MAP classifier:\\
+\subsection*{Multinomial Naive Bayes}
+MAP classifier:
 \[
-\hat c_{MAP}=\arg\max_{c\in C}\left(P(c)\prod_{i=1}^{|V|}P(w_i\mid c)^{x_i}\right).
-\]
-Log-space decision rule:\\
-\[
-\begin{array}{l}
-\hat c=\arg\max_{c\in C}\Big[\log P(c)\\
-\qquad +\sum_{i=1}^{|V|}x_i\log P(w_i\mid c)\Big].
-\end{array}
-\]
-Document likelihood form:\\
-\[
-P(x\mid c)=\frac{n!}{\prod_i x_i!}\prod_{i=1}^{|V|}\theta_{c,i}^{x_i}.
-\]
-$n=\sum_i x_i$.\\
-MLE and smoothing:\\
-\[
-\theta^{MLE}_{c,i}=\frac{n_{i,c}}{n_c}.
+\hat c_{MAP}=\arg\max_{c\in C}P(c\mid x).
 \]
 \[
-\theta_{c,i}=\frac{n_{i,c}+\alpha}{n_c+\alpha|V|}\quad(\text{Laplace when }\alpha=1).
+\hat c_{MAP}=\arg\max_{c\in C}P(c)P(x\mid c).
+\]
+Multinomial likelihood for bag-of-words counts $x_i$:
+\[
+P(x\mid c)=\frac{n!}{\prod_{i=1}^{|V|}x_i!}
+\prod_{i=1}^{|V|}\theta_{c,i}^{x_i},
+\]
+\[
+n=\sum_i x_i.
+\]
+Log-space decision rule:
+\[
+\hat c=\arg\max_{c\in C}
+\left[\log P(c)+\sum_{i=1}^{|V|}x_i\log\theta_{c,i}\right].
+\]
+MLE and add-$\alpha$ smoothing:
+\[
+\theta_{c,i}^{MLE}=\frac{n_{i,c}}{n_c},
+\qquad
+\theta_{c,i}=\frac{n_{i,c}+\alpha}{n_c+\alpha|V|}.
 \]
 
-\subsection*{Word Similarity and Embeddings}
-Dot product similarity:\\
+\subsection*{Word Vectors and Similarity}
+Dot product:
 \[
 a\cdot b=\sum_i a_i b_i.
 \]
-Cosine similarity:\\
+Norm and cosine:
 \[
-\cos(a,b)=\frac{a\cdot b}{\|a\|\,\|b\|},\qquad
-\|a\|=\sqrt{\sum_i a_i^2}.
+\|a\|=\sqrt{\sum_i a_i^2},
+\qquad
+\cos(a,b)=\frac{a\cdot b}{\|a\|\|b\|}.
 \]
-Use cosine to reduce length/frequency bias of raw dot product.
+Use cosine when vector length/frequency bias is undesirable.
 
-\subsection*{SGNS Core Probabilities}
-For target word $w$ and context word $c$:\\
+\subsection*{SGNS Core (lecture form)}
+For target word $w$ and context word $c$:
 \[
 P(+\mid w,c)=\sigma(u_c\cdot v_w).
 \]
 \[
-P(-\mid w,c)=1-P(+\mid w,c)=\sigma(-u_c\cdot v_w).
+P(-\mid w,c)=\sigma(-u_c\cdot v_w).
 \]
-One positive with $k$ negatives loss:\\
+One positive + $k$ negatives objective:
 \[
 \begin{array}{l}
-L_{CE}=-\Big[\log\sigma(u_{c^{+}}\cdot v_w)\\
-\qquad +\sum_{i=1}^{k}\log\sigma(-u_{c_i^-}\cdot v_w)\Big].
+L_{CE}= -\Big[
+\log\sigma(u_{c^+}\cdot v_w)\\
+\quad +\sum_{i=1}^{k}\log\sigma(-u_{c_i^-}\cdot v_w)
+\Big].
 \end{array}
+\]
+Useful derivatives:
+\[
+\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha).
+\]
+\[
+\frac{d}{d\alpha}\log\sigma(-\alpha)=-\sigma(\alpha).
 \]
 
-\subsection*{A1 Repro (exam-speed)}
+\subsection*{A1 Repro (exam-speed chain)}
 \textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) C, (e) C.\\
-\textbf{Q2(a) Add-one bigram:}\\
+\textbf{Q2(a)} add-one bigram:
 \[
-\begin{array}{l}
-P(Sam\mid am)=\frac{C(am,Sam)+1}{C(am)+|V|}\\
-\qquad =\frac{2+1}{3+11}=\frac{3}{14}.
-\end{array}
-\]
-\textbf{Q2(b) Interpolation:} $\lambda_1=\lambda_2=\frac12$,\\
-$P_{ML}(Sam\mid am)=\frac23$, $P_{ML}(Sam)=\frac{4}{25}$,\\
-\[
-P(Sam\mid am)=\frac12\cdot\frac23+\frac12\cdot\frac{4}{25}=\frac{31}{75}.
-\]
-\textbf{Q3 No EOS issue:} for each fixed length $\ell$,\\
-\[
-\sum_{w_{1:\ell}}P(w_{1:\ell})=1.
-\]
-Across all lengths: $1+1+1+\cdots$ (not normalizable).\\
-\textbf{Q4 NB derivation chain:} Bayes $\Rightarrow$ drop class-independent terms $\Rightarrow$ log transform $\Rightarrow$\\
-$\hat c=\arg\max_c\left[\log P(c)+\sum_i x_i\log\theta_{c,i}\right]$.\\
-\textbf{Q5 Logistic objective/gradient:}\\
-\[
-\begin{array}{l}
-\ell^{(i)}(\theta)=-\Big[y^{(i)}\log\sigma(\theta\cdot\phi(x^{(i)}))\\
-\qquad +(1-y^{(i)})\log(1-\sigma(\theta\cdot\phi(x^{(i)})))\Big].
-\end{array}
+P(Sam\mid am)=
+\frac{C(am,Sam)+1}{C(am)+|V|}
 \]
 \[
-\nabla_\theta\ell^{(i)}=(\sigma(\theta\cdot\phi(x^{(i)}))-y^{(i)})\phi(x^{(i)}).
+P(Sam\mid am)=\frac{2+1}{3+11}=\frac{3}{14}.
 \]
+\textbf{Q2(b)} interpolation ($\lambda_1=\lambda_2=\frac{1}{2}$):
+\[
+P(Sam\mid am)=
+\frac{1}{2}\cdot\frac{2}{3}
++\frac{1}{2}\cdot\frac{4}{25}
+=\frac{31}{75}.
+\]
+\textbf{Q3} No EOS modeling:
+\[
+\sum_{w_{1:\ell}}P(w_{1:\ell})=1\ \text{for each fixed }\ell,
+\]
+not a valid global distribution across all lengths.\\
+\textbf{Q4} NB derivation path: Bayes $\rightarrow$ drop class-independent terms $\rightarrow$ log-linear score.\\
+\textbf{Q5} Logistic objective and gradient: same CE and gradient forms as L3.
 
 \subsection*{L4 Pitfalls}
-- Compute NB in log-space to avoid underflow.\\
-- Without smoothing, a single unseen test word can zero out class likelihood.\\
-- Dot product alone over-favors frequent words; cosine is safer for similarity queries.
+- Compute NB in log space to avoid underflow.\\
+- Without smoothing, one unseen word can zero a class score.\\
+- Dot product alone can over-favor frequent words; cosine is safer.
