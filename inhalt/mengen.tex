@@ -30,28 +30,10 @@ Backtrace: store operation pointer (DEL/INS/SUB-MATCH) per cell.\\
 Complexity: time $O(MN)$; memory $O(MN)$ or $O(\min\{M,N\})$ with rolling rows.
 
 \subsection*{N-gram Language Modeling}
-Chain rule:
-\[
-P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_1^{i-1}).
-\]
-N-gram approximation:
-\[
-P(w_i\mid w_1^{i-1})\approx P(w_i\mid w_{i-(N-1)}^{i-1}).
-\]
-MLE bigram/unigram:
-\[
-P_{ML}(w_i\mid w_{i-1})=\frac{C(w_{i-1},w_i)}{C(w_{i-1})},
-\]
-\[
-P_{ML}(w_i)=\frac{C(w_i)}{\sum_{w\in V}C(w)}.
-\]
-With sentence markers:
-\[
-P(w_1\ldots w_n)=\prod_{i=1}^{n}P(w_i\mid w_{i-1}).
-\]
-\[
-w_0=\langle s\rangle.
-\]
+Chain rule: $P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_1^{i-1})$.\\
+N-gram approximation: $P(w_i\mid w_1^{i-1})\approx P(w_i\mid w_{i-(N-1)}^{i-1})$.\\
+MLE: $P_{ML}(w_i\mid w_{i-1})=\dfrac{C(w_{i-1},w_i)}{C(w_{i-1})}$, 
+$P_{ML}(w_i)=\dfrac{C(w_i)}{\sum_{w\in V}C(w)}$, with $w_0=\langle s\rangle$.
 
 \subsection*{Train/Dev/Test Protocol (L2)}
 Train set: fit parameters.\\
@@ -62,18 +44,9 @@ Workflow: train $\rightarrow$ tune on dev $\rightarrow$ freeze model $\rightarro
 
 \subsection*{Perplexity (textbook canonical)}
 For test sequence $W=w_1\ldots w_N$:
-\[
-PP(W)=P(w_1\ldots w_N)^{-1/N}.
-\]
-\[
-PP(W)=\exp\!\left(-\frac{1}{N}\sum_{i=1}^{N}\log p_i\right).
-\]
-\[
-p_i=P(w_i\mid w_1^{i-1}).
-\]
-\[
-PP(W)=2^{H(W)}.
-\]
+$PP(W)=P(w_1\ldots w_N)^{-1/N}
+=\exp\!\left(-\dfrac{1}{N}\sum_{i=1}^{N}\log p_i\right)
+=2^{H(W)}$, where $p_i=P(w_i\mid w_1^{i-1})$.\\
 L2 intuition slides: perplexity is inverse normalized test probability; minimizing PP is equivalent to maximizing test probability.\\
 Interpretation: weighted average branching factor (effective number of likely next words).
 

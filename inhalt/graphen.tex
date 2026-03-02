@@ -1,37 +1,9 @@
 \section{L5+L6: Neural Nets, Transformer, LLM, A2 Repro}
 \subsection*{Feedforward Neural LM / Classifier}
-Neural unit:
-\[
-z=w\cdot x+b,
-\qquad
- a=f(z).
-\]
-Activation choices:
-\[
-\sigma(z)=\frac{1}{1+e^{-z}},
-\]
-\[
-\tanh(z)=\frac{e^z-e^{-z}}{e^z+e^{-z}},
-\]
-\[
-\mathrm{ReLU}(z)=\max(0,z).
-\]
-Feedforward LM skeleton:
-\[
-x_t=[e_{w_{t-n+1}};\ldots;e_{w_{t-1}}],
-\]
-\[
-h_t=g(Wx_t+b_1).
-\]
-\[
-y_t=\mathrm{softmax}(Uh_t+b_2).
-\]
-\[
-P(w_t\mid w_{<t})=y_t[w_t].
-\]
-\[
-L_{CE}(t)=-\log y_t[w_{t+1}].
-\]
+Neural unit: $z=w\cdot x+b,\ a=f(z)$.\\
+Activation choices: $\sigma(z)=\dfrac{1}{1+e^{-z}}$, $\tanh(z)=\dfrac{e^z-e^{-z}}{e^z+e^{-z}}$, $\mathrm{ReLU}(z)=\max(0,z)$.\\
+Feedforward LM skeleton: $x_t=[e_{w_{t-n+1}};\ldots;e_{w_{t-1}}]$, $h_t=g(Wx_t+b_1)$, $y_t=\mathrm{softmax}(Uh_t+b_2)$.\\
+$P(w_t\mid w_{<t})=y_t[w_t]$, and $L_{CE}(t)=-\log y_t[w_{t+1}]$.
 
 \subsection*{L5 Multinomial/Softmax Regression}
 Lecture framing: multinomial logistic regression is a 1-layer network.\\
@@ -78,32 +50,17 @@ SGD update:
 \]
 
 \subsection*{Decoder-only LLM and Decoding}
-Autoregressive factorization:
-\[
-P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_{<i}).
-\]
-Greedy decoding:
-\[
-\hat w_t=\arg\max_{w\in V}P(w\mid w_{<t}).
-\]
-Logits to probabilities:
-\[
-y=\mathrm{softmax}(u).
-\]
-Temperature sampling:
-\[
-\mathrm{softmax}(u/\tau).
-\]
-\[
-\tau\uparrow \Rightarrow \text{flatter distribution}.
-\]
+Autoregressive factorization: $P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_{<i})$.\\
+Greedy decoding: $\hat w_t=\arg\max_{w\in V}P(w\mid w_{<t})$.\\
+Logits to probabilities: $y=\mathrm{softmax}(u)$; temperature sampling uses $\mathrm{softmax}(u/\tau)$, with $\tau\uparrow\Rightarrow$ flatter distribution and $\tau\downarrow 0\Rightarrow$ closer to greedy.
 Random sampling caveat from lecture: probability tails contain many low-probability odd words; accumulated tail mass still causes bad samples.\\
 Quality/diversity tradeoff: emphasize high-probability words $\Rightarrow$ quality up, diversity down; flatter sampling does the reverse.
+Random sampling loop (slide form): sample $w_1\sim p(w)$, then repeatedly sample $w_i\sim p(w_i\mid w_{<i})$ until EOS.
 
 \subsection*{Top-k and Top-p Decoding (L6)}
 Top-$k$: keep only $k$ highest-probability tokens, renormalize, then sample.\\
 When $k=1$, top-$k$ reduces to greedy decoding.\\
-Top-$p$ (nucleus): choose smallest token set $S$ with cumulative probability $\sum_{w\in S}p(w)\ge p$, renormalize on $S$, then sample.\\
+Top-$p$ (nucleus): choose smallest token set $S$ with cumulative probability $\sum_{w\in S}p(w)\ge p_0$, renormalize on $S$, then sample.\\
 Why top-$p$: unlike fixed $k$, retained set size adapts to distribution sharpness by context.
 
 \subsection*{Transformer Attention (canonical)}
@@ -165,6 +122,8 @@ t_i^5=FFN(t_i^4),\qquad h_i=t_i^5+t_i^3.
 \]
 
 \subsection*{Post-training Modes and Risks}
+L6 training pipeline (slides): pretraining $\rightarrow$ instruction tuning $\rightarrow$ preference alignment.\\
+Self-supervised training: predict next token at each position with CE loss; teacher forcing feeds gold previous token during training.\\
 Continued pretraining: continue LM objective on domain corpus.\\
 PEFT: tune small adapter/low-rank parameter subset.\\
 SFT: supervised instruction-response fine-tuning.\\
