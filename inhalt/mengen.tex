@@ -53,6 +53,13 @@ P(w_1\ldots w_n)=\prod_{i=1}^{n}P(w_i\mid w_{i-1}).
 w_0=\langle s\rangle.
 \]
 
+\subsection*{Train/Dev/Test Protocol (L2)}
+Train set: fit parameters.\\
+Dev set: tune hyperparameters/model choices.\\
+Test set: final one-shot report of generalization.\\
+Lecture warning: training (or repeated tuning) on test set gives artificially high test probability; bad science.\\
+Workflow: train $\rightarrow$ tune on dev $\rightarrow$ freeze model $\rightarrow$ run test once.
+
 \subsection*{Perplexity (textbook canonical)}
 For test sequence $W=w_1\ldots w_N$:
 \[
@@ -67,6 +74,17 @@ p_i=P(w_i\mid w_1^{i-1}).
 \[
 PP(W)=2^{H(W)}.
 \]
+L2 intuition slides: perplexity is inverse normalized test probability; minimizing PP is equivalent to maximizing test probability.\\
+Interpretation: weighted average branching factor (effective number of likely next words).
+
+\subsection*{Shannon Visualization (1948)}
+Shannon game intuition: a good LM predicts the actually occurring next word with higher probability.\\
+Bigram sampling procedure (slide style):\\
+1. Sample first word $w$ from $p(w\mid\langle s\rangle)$.\\
+2. Repeatedly sample next token $x\sim p(x\mid w)$.\\
+3. Set $w\leftarrow x$ and continue until $\langle/ s\rangle$.\\
+4. Concatenate sampled words to form generated sentence.
+
 Lower PP is better only under same tokenizer, preprocessing, and test split.
 
 \subsection*{Smoothing / Backoff / Interpolation}

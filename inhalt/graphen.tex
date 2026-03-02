@@ -33,6 +33,23 @@ P(w_t\mid w_{<t})=y_t[w_t].
 L_{CE}(t)=-\log y_t[w_{t+1}].
 \]
 
+\subsection*{L5 Multinomial/Softmax Regression}
+Lecture framing: multinomial logistic regression is a 1-layer network.\\
+Input $x\in\mathbb R^d$, output class-probability vector $y\in\mathbb R^{|C|}$:
+\[
+y=\mathrm{softmax}(Wx+b),\qquad y_c=p(y=c\mid x).
+\]
+Binary logistic is the $|C|=2$ special case of the same idea.\\
+Two-layer softmax classifier (slide form): $h=g(Wx+b_1)$, $y=\mathrm{softmax}(Uh+b_2)$.
+
+\subsection*{L5 Optional Regularization/Prior}
+If slide includes Gaussian prior view: L2 regularization is MAP with Gaussian prior on weights.\\
+Equivalent objective form:
+\[
+\hat\theta=\arg\max_\theta\ \sum_i \log p(y^{(i)}\mid x^{(i)};\theta)-\lambda\|\theta\|_2^2.
+\]
+Interpretation: Gaussian prior centered at $0$ encourages smaller weights.
+
 \subsection*{Backprop / Chain Rule Mini-Template}
 \[
 \frac{d}{dx}u(v(x))=\frac{du}{dv}\frac{dv}{dx}.
@@ -79,6 +96,14 @@ Temperature sampling:
 \[
 \tau\uparrow \Rightarrow \text{flatter distribution}.
 \]
+Random sampling caveat from lecture: probability tails contain many low-probability odd words; accumulated tail mass still causes bad samples.\\
+Quality/diversity tradeoff: emphasize high-probability words $\Rightarrow$ quality up, diversity down; flatter sampling does the reverse.
+
+\subsection*{Top-k and Top-p Decoding (L6)}
+Top-$k$: keep only $k$ highest-probability tokens, renormalize, then sample.\\
+When $k=1$, top-$k$ reduces to greedy decoding.\\
+Top-$p$ (nucleus): choose smallest token set $S$ with cumulative probability $\sum_{w\in S}p(w)\ge p$, renormalize on $S$, then sample.\\
+Why top-$p$: unlike fixed $k$, retained set size adapts to distribution sharpness by context.
 
 \subsection*{Transformer Attention (canonical)}
 Single-head projections:

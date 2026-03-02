@@ -40,6 +40,21 @@ Norm and cosine:
 \]
 Use cosine when vector length/frequency bias is undesirable.
 
+\subsection*{Window Size and Neighbor Type (L4)}
+Small context window ($C=\pm2$): nearest neighbors are often syntactic/taxonomic.\\
+Large context window ($C=\pm5$): neighbors shift toward topical/semantic field relations.\\
+Lecture example (Hogwarts): small window gives fictional-school neighbors; large window gives Harry-Potter-world terms.
+
+\subsection*{Analogy by Parallelogram}
+Parallelogram method: for $a:a^\*: : b:b^\*$, use $v(b^\*)\approx v(a^\*)-v(a)+v(b)$.\\
+Canonical examples: $v(king)-v(man)+v(woman)\approx v(queen)$;\\
+$v(Paris)-v(France)+v(Italy)\approx v(Rome)$.
+
+\subsection*{Embedding Bias Notes}
+Slides emphasize: embeddings reflect statistical regularities and cultural bias in training data.\\
+Example template: father:doctor::mother:$x$ may return stereotyped completions.\\
+Downstream retrieval/ranking/classification systems can inherit these biases if embeddings are used directly.
+
 \subsection*{SGNS Core (lecture form)}
 For target word $w$ and context word $c$:
 \[
