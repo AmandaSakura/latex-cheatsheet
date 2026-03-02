@@ -8,46 +8,24 @@ $P(w_t\mid w_{<t})=y_t[w_t]$, and $L_{CE}(t)=-\log y_t[w_{t+1}]$.
 \subsection*{L5 Multinomial/Softmax Regression}
 Lecture framing: multinomial logistic regression is a 1-layer network.\\
 Input $x\in\mathbb R^d$, output class-probability vector $y\in\mathbb R^{|C|}$:
-\[
-y=\mathrm{softmax}(Wx+b),\qquad y_c=p(y=c\mid x).
-\]
+$y=\mathrm{softmax}(Wx+b),\ y_c=p(y=c\mid x)$.\\
 Multiclass probability form: $p(y=c\mid x)=\mathrm{softmax}(Wx+b)_c$.\\
 Multiclass CE/NLL: $L=-\log p(y\mid x)$; binary logistic is the $|C|=2$ special case.\\
 Two-layer softmax classifier (slide form): $h=g(Wx+b_1)$, $y=\mathrm{softmax}(Uh+b_2)$.
 
 \subsection*{L5 Optional Regularization/Prior}
 If slide includes Gaussian prior view: L2 regularization is MAP with Gaussian prior on weights.\\
-Equivalent objective form:
-\[
-\hat\theta=\arg\max_\theta\ \sum_i \log p(y^{(i)}\mid x^{(i)};\theta)-\lambda\|\theta\|_2^2.
-\]
+Equivalent objective form: $\hat\theta=\arg\max_\theta\ \sum_i \log p(y^{(i)}\mid x^{(i)};\theta)-\lambda\|\theta\|_2^2$.\\
 Interpretation: Gaussian prior centered at $0$ encourages smaller weights.
 
 \subsection*{Backprop / Chain Rule Mini-Template}
-\[
-\frac{d}{dx}u(v(x))=\frac{du}{dv}\frac{dv}{dx}.
-\]
-\[
-\frac{d}{dx}u(v(w(x)))=\frac{du}{dv}\frac{dv}{dw}\frac{dw}{dx}.
-\]
+$\dfrac{d}{dx}u(v(x))=\dfrac{du}{dv}\dfrac{dv}{dx}$,\ 
+$\dfrac{d}{dx}u(v(w(x)))=\dfrac{du}{dv}\dfrac{dv}{dw}\dfrac{dw}{dx}$.\\
 Derivatives used in lecture:
-\[
-\frac{d\sigma(z)}{dz}=\sigma(z)(1-\sigma(z)),
-\]
-\[
-\frac{d\tanh(z)}{dz}=1-\tanh^2(z),
-\]
-\[
-\frac{d\,\mathrm{ReLU}(z)}{dz}=
-\begin{cases}
-0,&z<0\\
-1,&z\ge 0
-\end{cases}
-\]
-SGD update:
-\[
-\theta\leftarrow\theta-\eta\nabla_\theta L.
-\]
+$\dfrac{d\sigma(z)}{dz}=\sigma(z)(1-\sigma(z))$,\ 
+$\dfrac{d\tanh(z)}{dz}=1-\tanh^2(z)$,\ 
+$\dfrac{d\,\mathrm{ReLU}(z)}{dz}=\begin{cases}0,&z<0\\1,&z\ge 0\end{cases}$.\\
+SGD update: $\theta\leftarrow\theta-\eta\nabla_\theta L$.
 
 \subsection*{Decoder-only LLM and Decoding}
 Autoregressive factorization: $P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_{<i})$.\\
@@ -64,62 +42,21 @@ Top-$p$ (nucleus): choose smallest token set $S$ with cumulative probability $\s
 Why top-$p$: unlike fixed $k$, retained set size adapts to distribution sharpness by context.
 
 \subsection*{Transformer Attention (canonical)}
-Single-head projections:
-\[
-q_i=x_iW^Q,\qquad k_j=x_jW^K.
-\]
-\[
-v_j=x_jW^V.
-\]
-Scaled dot-product attention:
-\[
-score(x_i,x_j)=\frac{q_i\cdot k_j}{\sqrt{d_k}},
-\]
-\[
-\alpha_{ij}=\mathrm{softmax}(score(x_i,x_j)),
-\]
-\[
-a_i=\sum_{j\le i}\alpha_{ij}v_j.
-\]
-Multi-head (head index $c=1,\ldots,h$):
-\[
-q_i^c=x_iW^{Q_c}.
-\]
-\[
-k_j^c=x_jW^{K_c}.
-\]
-\[
-v_j^c=x_jW^{V_c}.
-\]
-\[
-head_i^c=\sum_{j\le i}\alpha_{ij}^c v_j^c,
-\]
-\[
-a_i=(head_i^1\oplus\cdots\oplus head_i^h)W^O.
-\]
-LayerNorm (Eq. 9.21--9.24 style):
-\[
-\mu=\frac{1}{d}\sum_{r=1}^{d}x_r,
-\]
-\[
-\sigma=\sqrt{\frac{1}{d}\sum_{r=1}^{d}(x_r-\mu)^2},
-\]
-\[
-\mathrm{LayerNorm}(x)=\gamma\frac{x-\mu}{\sigma}+\beta.
-\]
+Single-head: $q_i=x_iW^Q,\ k_j=x_jW^K,\ v_j=x_jW^V$.\\
+Scaled dot-product: $score(x_i,x_j)=\dfrac{q_i\cdot k_j}{\sqrt{d_k}}$, 
+$\alpha_{ij}=\mathrm{softmax}(score(x_i,x_j))$, 
+$a_i=\sum_{j\le i}\alpha_{ij}v_j$.\\
+Multi-head ($c=1,\ldots,h$): $q_i^c=x_iW^{Q_c},\ k_j^c=x_jW^{K_c},\ v_j^c=x_jW^{V_c}$,\\
+$head_i^c=\sum_{j\le i}\alpha_{ij}^c v_j^c$, 
+$a_i=(head_i^1\oplus\cdots\oplus head_i^h)W^O$.\\
+LayerNorm (Eq. 9.21--9.24): 
+$\mu=\dfrac{1}{d}\sum_{r=1}^{d}x_r$, 
+$\sigma=\sqrt{\dfrac{1}{d}\sum_{r=1}^{d}(x_r-\mu)^2}$, 
+$\mathrm{LayerNorm}(x)=\gamma\dfrac{x-\mu}{\sigma}+\beta$.\\
 Transformer block (pre-norm residual stream):
-\[
-t_i^1=LN(x_i).
-\]
-\[
-t_i^2=MHA(t_i^1,\{x_1^1,\ldots,x_N^1\}).
-\]
-\[
-t_i^3=t_i^2+x_i,\qquad t_i^4=LN(t_i^3).
-\]
-\[
-t_i^5=FFN(t_i^4),\qquad h_i=t_i^5+t_i^3.
-\]
+$t_i^1=LN(x_i)$, $t_i^2=MHA(t_i^1,\{x_1^1,\ldots,x_N^1\})$, 
+$t_i^3=t_i^2+x_i$, $t_i^4=LN(t_i^3)$, 
+$t_i^5=FFN(t_i^4)$, $h_i=t_i^5+t_i^3$.
 
 \subsection*{Post-training Modes and Risks}
 L6 training pipeline (slides): pretraining $\rightarrow$ instruction tuning $\rightarrow$ preference alignment.\\
@@ -133,47 +70,42 @@ Safety quick list: hallucination, privacy leakage, toxicity, representation bias
 \subsection*{A2 Repro (exam-speed chain)}
 \textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) D, (e) A.\\
 \textbf{Q2(a)} SGNS objective:
-\[
-\begin{array}{l}
+$
 J(\theta)=
-\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)\\
-\quad +k\sum_{(w,\cdot)\in D}\mathbb E_{c'\sim P_n}[g(w,c')].
-\end{array}
-\]
-\[
-g(w,c')=\log\sigma(-u_{c'}\cdot v_w),\qquad
-\max_\theta J(\theta).
-\]
+\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)
++k\sum_{(w,\cdot)\in D}\mathbb E_{c'\sim P_n}[g(w,c')],
+\ 
+g(w,c')=\log\sigma(-u_{c'}\cdot v_w),\ 
+\max_\theta J(\theta).$\\
 Expanded expectation form:
-\[
-\begin{array}{l}
-J(\theta)=
-\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)\\
-\quad +k\sum_{(w,\cdot)\in D}\sum_{c'\in V}P_n(c')\,g(w,c').
-\end{array}
-\]
-\textbf{Q2(b)}
-\[
-\frac{d}{d\alpha}\log\sigma(\alpha)=\frac{1}{1+e^{\alpha}}.
-\]
-\[
-\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha).
-\]
-\textbf{Q2(c)} for one pair ($\alpha=u_0\cdot v_1$):
-\[
-\alpha^*=\log\frac{A}{B}.
-\]
-\textbf{Q2(d)} with negative sampling:
-\[
-\alpha^*=PMI(1,0)-\log k.
-\]
-\textbf{Q2(e)} choose $0<\beta<1$ in
-\[
-P_n(w)\propto P_{unigram}(w)^\beta.
-\]
-common choice $\beta=0.75$.
+$J(\theta)=
+\sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)
++k\sum_{(w,\cdot)\in D}\sum_{c'\in V}P_n(c')\,g(w,c')$.\\
+\textbf{Q2(b)} $\dfrac{d}{d\alpha}\log\sigma(\alpha)=\dfrac{1}{1+e^{\alpha}}=\sigma(-\alpha)$.\\
+\textbf{Q2(c)} for one pair ($\alpha=u_0\cdot v_1$): $\alpha^*=\log\dfrac{A}{B}$.\\
+\textbf{Q2(d)} with negative sampling: $\alpha^*=PMI(1,0)-\log k$.\\
+\textbf{Q2(e)} choose $0<\beta<1$ in $P_n(w)\propto P_{unigram}(w)^\beta$; common $\beta=0.75$.
 
 \subsection*{L5/L6 Pitfalls}
 - Most backprop bugs are wrong shape or wrong chain path.\\
 - Wrong causal mask leaks future tokens and breaks autoregressive eval.\\
 - Always report tokenizer and decoding setup with LM metrics.
+
+\subsection*{L6 Extra Exam Notes}
+Softmax from logits: $p_i=\dfrac{\exp(u_i)}{\sum_j\exp(u_j)}$, 
+$p_i^{(\tau)}=\dfrac{\exp(u_i/\tau)}{\sum_j\exp(u_j/\tau)}$.\\
+Temperature limit intuition (slides): $\tau\!\downarrow\!0$ approaches argmax-like decoding; large $\tau$ makes distribution flatter.\\
+LM training objective over sequence: 
+$L_{LM}=-\sum_t\log p(w_{t+1}\mid w_{\le t})$, with one-hot CE at each step.\\
+Teacher forcing detail: at step $t\!+\!1$, feed gold $w_{t+1}$ (not sampled prediction) as next input context.\\
+Conditional generation form: for prompt $w_{1:m}$, 
+$p(w_{m+1:m+n}\mid w_{1:m})=\prod_{t=m+1}^{m+n}p(w_t\mid w_{<t})$.\\
+Decoding stop conditions: stop at EOS or max-length limit; report decoding setup with results.
+
+\subsection*{L6 Generation Checklist}
+Sampling quality/diversity control: greedy $\rightarrow$ quality/high repetition; random multinomial $\rightarrow$ diversity/high tail risk.\\
+Top-$k$ keeps fixed candidate count; top-$p$ keeps dynamic candidate mass (more robust across sharp/flat contexts).\\
+At inference, common procedure: logits $u_t\rightarrow$ softmax distribution $\rightarrow$ apply decoding rule $\rightarrow$ append token $\rightarrow$ repeat.\\
+CE at time step $t$: $L_t=-\sum_{w\in V}y_t[w]\log \hat y_t[w]=-\log \hat y_t[w_{t+1}]$.\\
+Training uses teacher forcing; evaluation/perplexity must report tokenizer + decoding setting for fair comparison.\\
+Three-stage LLM pipeline reminder: pretraining $\rightarrow$ instruction tuning $\rightarrow$ preference alignment.
