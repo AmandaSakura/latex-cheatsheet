@@ -2,131 +2,77 @@
 \subsection*{Min Edit Distance (Levenshtein)}
 Given strings $X=x_1\ldots x_M$, $Y=y_1\ldots y_N$:
 \[
-D(i,0)=i,\qquad D(0,j)=j.
+\begin{aligned}
+D(i,0)&=i,\quad D(0,j)=j,\\
+D(i,j)&=\min\{D(i-1,j)+1,\ D(i,j-1)+1,\ D(i-1,j-1)+cost\}.
+\end{aligned}
 \]
+$cost=0$ if $x_i=y_j$, else substitution cost (lecture often uses $2$). Weighted form:
 \[
-\begin{array}{l}
-D(i,j)=\min\{\\
-\quad D(i-1,j)+1,\\
-\quad D(i,j-1)+1,\\
-\quad D(i-1,j-1)+cost\\
-\}.
-\end{array}
+\begin{aligned}
+D(i,0)&=D(i-1,0)+del[x_i],\quad D(0,j)=D(0,j-1)+ins[y_j],\\
+D(i,j)&=\min\{D(i-1,j)+del[x_i],\ D(i,j-1)+ins[y_j],\ D(i-1,j-1)+sub[x_i,y_j]\}.
+\end{aligned}
 \]
-$cost=0$ if $x_i=y_j$, else substitution cost (lecture examples may use $2$).\\
-Weighted form:
-\[
-\begin{array}{l}
-D(i,0)=D(i-1,0)+del[x_i],\\
-D(0,j)=D(0,j-1)+ins[y_j],\\
-D(i,j)=\min\{\\
-\quad D(i-1,j)+del[x_i],\\
-\quad D(i,j-1)+ins[y_j],\\
-\quad D(i-1,j-1)+sub[x_i,y_j]\\
-\}.
-\end{array}
-\]
-Backtrace: store operation pointer (DEL/INS/SUB-MATCH) per cell.\\
-Complexity: time $O(MN)$; memory $O(MN)$ or $O(\min\{M,N\})$ with rolling rows.
+Backtrace stores DEL/INS/SUB-MATCH pointers. Complexity: time $O(MN)$, memory $O(MN)$ or $O(\min\{M,N\})$ (rolling rows).
 
 \subsection*{N-gram Language Modeling}
-Chain rule:
 \[
-P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_1^{i-1}).
-\]
-N-gram approximation:
-\[
-P(w_i\mid w_1^{i-1})\approx P(w_i\mid w_{i-(N-1)}^{i-1}).
-\]
-MLE bigram/unigram:
-\[
-P_{ML}(w_i\mid w_{i-1})=\frac{C(w_{i-1},w_i)}{C(w_{i-1})},
-\]
-\[
-P_{ML}(w_i)=\frac{C(w_i)}{\sum_{w\in V}C(w)}.
-\]
-With sentence markers:
-\[
-P(w_1\ldots w_n)=\prod_{i=1}^{n}P(w_i\mid w_{i-1}).
-\]
-\[
-w_0=\langle s\rangle.
+\begin{aligned}
+P(w_1^n)&=\prod_{i=1}^{n}P(w_i\mid w_1^{i-1}),\\
+P(w_i\mid w_1^{i-1})&\approx P(w_i\mid w_{i-(N-1)}^{i-1}),\\
+P_{ML}(w_i\mid w_{i-1})&=\frac{C(w_{i-1},w_i)}{C(w_{i-1})},\quad
+P_{ML}(w_i)=\frac{C(w_i)}{\sum_{w\in V}C(w)},\\
+P(w_1\ldots w_n)&=\prod_{i=1}^{n}P(w_i\mid w_{i-1}),\quad w_0=\langle s\rangle.
+\end{aligned}
 \]
 
 \subsection*{Train/Dev/Test Protocol (L2)}
-Train set: fit parameters.\\
-Dev set: tune hyperparameters/model choices.\\
-Test set: final one-shot report of generalization.\\
-Lecture warning: training (or repeated tuning) on test set gives artificially high test probability; bad science.\\
-Workflow: train $\rightarrow$ tune on dev $\rightarrow$ freeze model $\rightarrow$ run test once.
+Train: fit parameters; Dev: tune model/hyperparameters; Test: one-shot final report. Never tune on test. Workflow: train $\to$ dev tune $\to$ freeze $\to$ test once.
 
 \subsection*{Perplexity (textbook canonical)}
-For test sequence $W=w_1\ldots w_N$:
 \[
-PP(W)=P(w_1\ldots w_N)^{-1/N}.
+\begin{aligned}
+PP(W)&=P(w_1\ldots w_N)^{-1/N}=\exp\!\left(-\frac{1}{N}\sum_{i=1}^{N}\log p_i\right)=2^{H(W)},\\
+p_i&=P(w_i\mid w_1^{i-1}).
+\end{aligned}
 \]
-\[
-PP(W)=\exp\!\left(-\frac{1}{N}\sum_{i=1}^{N}\log p_i\right).
-\]
-\[
-p_i=P(w_i\mid w_1^{i-1}).
-\]
-\[
-PP(W)=2^{H(W)}.
-\]
-L2 intuition slides: perplexity is inverse normalized test probability; minimizing PP is equivalent to maximizing test probability.\\
-Interpretation: weighted average branching factor (effective number of likely next words).
+Interpretation: inverse normalized test probability (effective branching factor). Compare PP only under same tokenizer/preprocessing/test split.
 
 \subsection*{Shannon Visualization (1948)}
-Shannon game intuition: a good LM predicts the actually occurring next word with higher probability.\\
-Bigram sampling procedure (slide style):\\
-1. Sample first word $w$ from $p(w\mid\langle s\rangle)$.\\
-2. Repeatedly sample next token $x\sim p(x\mid w)$.\\
-3. Set $w\leftarrow x$ and continue until $\langle/ s\rangle$.\\
-4. Concatenate sampled words to form generated sentence.
-
-Lower PP is better only under same tokenizer, preprocessing, and test split.
+Bigram generation sketch: sample $w\sim p(w\mid\langle s\rangle)$, then repeat $x\sim p(x\mid w)$, set $w\leftarrow x$, stop at $\langle/ s\rangle$.
 
 \subsection*{Smoothing / Backoff / Interpolation}
-Laplace (add-1):
 \[
-P_{add1}(w_i\mid w_{i-1})=
-\frac{C(w_{i-1},w_i)+1}{C(w_{i-1})+|V|}.
-\]
-Add-$k$ ($0<k<1$):
-\[
-P_{addk}(w_i\mid w_{i-1})=
-\frac{C(w_{i-1},w_i)+k}{C(w_{i-1})+k|V|}.
+\begin{aligned}
+P_{add1}(w_i\mid w_{i-1})&=\frac{C(w_{i-1},w_i)+1}{C(w_{i-1})+|V|},\\
+P_{addk}(w_i\mid w_{i-1})&=\frac{C(w_{i-1},w_i)+k}{C(w_{i-1})+k|V|},\quad 0<k<1.
+\end{aligned}
 \]
 Linear interpolation (trigram):
 \[
-\begin{array}{l}
-P(w_i\mid w_{i-2},w_{i-1})=\\
-\lambda_3P_{ML}(w_i\mid w_{i-2},w_{i-1})+\\
-\lambda_2P_{ML}(w_i\mid w_{i-1})+\lambda_1P_{ML}(w_i),
-\end{array}
+\begin{aligned}
+P(w_i\mid w_{i-2},w_{i-1})={}&\lambda_3P_{ML}(w_i\mid w_{i-2},w_{i-1})+\lambda_2P_{ML}(w_i\mid w_{i-1})+\lambda_1P_{ML}(w_i),\\
+&\lambda_1+\lambda_2+\lambda_3=1.
+\end{aligned}
 \]
+Katz backoff: when higher-order count is zero, back off to lower order with discounting so mass stays normalized.\\
+Stupid backoff (lecture):
 \[
-\lambda_1+\lambda_2+\lambda_3=1.
+S(w_i\mid h)=
+\begin{cases}
+\dfrac{count(h,w_i)}{count(h)},&count(h,w_i)>0,\\
+0.4\,S(w_i\mid h'),&\text{otherwise},
+\end{cases}
 \]
-Backoff principle: when higher-order count is zero, use lower-order model (usually with discounting).
+where $h'$ is the shorter history; this is a scoring rule, not a true normalized probability.
 
 \subsection*{A1 Repro (L2 core)}
-Q2(a) add-one bigram:
-\[
-P(Sam\mid am)=\frac{C(am,Sam)+1}{C(am)+|V|}=\frac{3}{14}.
-\]
-Q2(b) interpolation in assignment:
-\[
-P(Sam\mid am)=\frac{31}{75}.
-\]
-Q3 no EOS: for fixed length $\ell$,
-\[
-\sum_{w_{1:\ell}}P(w_{1:\ell})=1,
-\]
-but across all lengths it is not normalizable.
+Q2(a) add-one bigram: $P(Sam\mid am)=\dfrac{C(am,Sam)+1}{C(am)+|V|}=\dfrac{3}{14}$.\\
+Q2(b) interpolation in assignment: $P(Sam\mid am)=\dfrac{31}{75}$.\\
+Q3 no EOS: for fixed length $\ell$, $\sum_{w_{1:\ell}}P(w_{1:\ell})=1$, but not a valid global distribution across all lengths.
 
 \subsection*{L2 Pitfalls}
-- Unsmoothed model assigns zero probability to unseen n-grams.\\
+- Unsmoothed models assign zero probability to unseen n-grams.\\
 - Add-1 is often too aggressive for large vocabularies.\\
-- Tune interpolation weights on held-out data, not test set.
+- Tune interpolation/backoff settings on held-out data, not test.
