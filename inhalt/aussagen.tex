@@ -1,74 +1,108 @@
 \section{L1 Foundations: Tokens, Unicode, BPE, Regex}
+
 \subsection*{Token Basics}
-Type: unique element in vocabulary $V$; size $|V|$.\\
-Token (instance): one occurrence in corpus; total count $N$.\\
-Lecture example sentence ``They ... stars'': 14 types, 16 instances (ignore punctuation).\\
-Orthographic vs grammatical word can differ: ``I'm'' is one orthographic token\\
-but two words ($I$ + $am$).\\
-Heaps/Herdan law (lecture statement):
+Type: unique vocabulary item; $|V|$.\\
+Token (instance): occurrence in corpus; total $N$.\\
+Orthographic $\neq$ grammatical word: ``I'm'' = 1 token, 2 words ($I+am$).\\
+Heaps/Herdan law:
 \[
-|V|\approx KN^{\beta},\qquad \beta\approx 0.5.
+|V| \approx K N^{\beta}, \qquad \beta \approx 0.5
 \]
-Type-token ratio $|V|/N$ decreases as corpus grows.
+Vocabulary grows sublinearly; type-token ratio $|V|/N \downarrow$ as $N \uparrow$.\\
+\textbf{Common traps:} token count depends on tokenizer; punctuation decisions matter.
 
-\subsection*{Language and Token Budget}
-Whitespace tokenization is language-dependent; not universal.\\
-For Chinese/Japanese/Thai, segmentation choices change token count strongly.\\
-Chinese lecture point: words are built from hanzi; each character can correspond\\
-to a morpheme.\\
-Chinese segmentation is not uniquely agreed: same utterance can have multiple\\
-valid word segmentations.\\
-Practical exam note: same sentence meaning can consume very different\\
-token budgets across tokenizers/languages.
+\subsection*{Language \& Token Budget}
+Whitespace tokenization not universal.\\
+Chinese/Japanese/Thai require segmentation; multiple valid segmentations.\\
+Token budget and perplexity not directly comparable across tokenizers/languages.\\
+\textbf{Common traps:} tokenizer mismatch invalidates model/perplexity comparison.
 
-\subsection*{L1 Morphology and ``What is a Word''}
-Morpheme: minimal meaning-bearing unit in a language.\\
-Examples from slides: ``fox'' = one morpheme; ``cats'' = $cat + {-s}$.\\
-Root vs affix: root carries core meaning; affix adds grammatical/semantic function.\\
-Inflectional morphemes: mostly grammatical\\
-(e.g., verb past \texttt{-ed}, noun plural \texttt{-s/-es}).\\
-Derivational morphemes: often change lexical class/meaning\\
-(e.g., care $\rightarrow$ careful $\rightarrow$ carefully).\\
-Clitic: syntactically word-like but phonologically reduced and attached\\
-(e.g., \texttt{'ve} in \texttt{I've}).
+\subsection*{Morphology and ``What is a Word''}
+Morpheme: minimal meaning-bearing unit.\\
+Root = core meaning; affix = grammatical/semantic modification.\\
+Inflectional (e.g., \texttt{-ed}, \texttt{-s}) vs derivational (class/meaning change).\\
+Clitic: syntactically word-like but phonologically attached (e.g., \texttt{'ve}).\\
+\textbf{Common traps:} word boundary $\neq$ morpheme boundary.
 
-\subsection*{Unicode, Code Points, UTF-8}
-Unicode maps symbols to code points (e.g., \texttt{a}=U+0061).\\
-Code point is not glyph; rendering belongs to font + shaping.\\
-UTF-8 is variable length and ASCII-compatible:
-\[
-\begin{array}{l}
-\text{1-byte: }0xxxxxxx,\\
-\text{2-byte: }110xxxxx\ 10xxxxxx,\\
-\text{3-byte: }1110xxxx\ 10xxxxxx\ 10xxxxxx,\\
-\text{4-byte: }11110xxx\ 10xxxxxx\\
-\text{\phantom{4-byte: }}10xxxxxx\ 10xxxxxx.
-\end{array}
-\]
-ASCII (first 127 code points) uses 1 byte in UTF-8.\\
-Python 3 strings are Unicode code points; \texttt{len()} counts code points (not bytes).
+\subsection*{Unicode \& UTF-8}
+Unicode assigns code points (e.g., \texttt{a}=U+0061); code point $\neq$ glyph.\\
+UTF-8: variable-length, ASCII-compatible.\\
+ASCII (U+0000--U+007F) = 1 byte.\\
+Most common CJK $\approx$ 3 bytes; emoji often 4 bytes (depends on code point range).\\
+Python 3 strings = Unicode code points; \texttt{len()} counts code points (not bytes).\\
+\textbf{Common traps:} mixing byte-level and code-point operations causes silent bugs.
 
 \subsection*{BPE (Byte Pair Encoding)}
-Train-time learner (repeat for $k$ merges):
-1. Find most frequent adjacent pair $(A,B)$.\\
-2. Add merged token $AB$ to $V$.\\
-3. Replace each $A\ B$ by $AB$.\\
-Test-time encoder: start from chars/bytes.\\
-Apply learned merges greedily in learned order.\\
-Byte-level BPE uses alphabet size 256 (all bytes), avoiding byte-level OOV.
+Two parts: (1) learner, (2) encoder.\\
+Training (repeat $k$ merges):\\
+\quad 1. Find most frequent adjacent pair $(A,B)$.\\
+\quad 2. Add merged token $AB$ to $V$.\\
+\quad 3. Replace occurrences of $A\ B$ with $AB$.\\
+Encoding: start from chars/bytes; apply merges greedily in learned order.\\
+Byte-level BPE: alphabet size 256 (all bytes) $\Rightarrow$ no OOV.\\
+\textbf{Common traps:} test-time frequencies do NOT affect merge order.
 
-\subsection*{Regex Essentials (Tokenization/Cleanup)}
-Character classes: \verb|[abc]|, \verb|[A-Z]|, \verb|[^0-9]|.\\
-Quantifiers: \verb|*| (0+), \verb|+| (1+), \verb|?| (0/1), \verb|{m,n}|.\\
+\subsection*{Regex Essentials (Preprocessing)}
+Character classes: \verb|[A-Z]|, \verb|[^0-9]|.\\
+Quantifiers: \verb|*|, \verb|+|, \verb|?|, \verb|{m,n}|.\\
 Anchors: \verb|^|, \verb|$|, boundary \verb|\b|, wildcard \verb|.|.\\
 Grouping: capturing \verb|(...)|, non-capturing \verb|(?:...)|.\\
-Lookahead: positive \verb|(?=...)|, negative \verb|(?!...)|.\\
-Substitution API: \texttt{re.sub(...)}.\\
-Capture-group reorder: group2 then group1.
+Lookahead: \verb|(?=...)| (pos), \verb|(?!...)| (neg).\\
+\texttt{re.sub()} supports capture-group reordering.\\
+\textbf{Common traps:} forgetting raw string \verb|r"... "| in Python.
 
-\subsection*{L1 Pitfalls}
-- Code switching: mixing languages in one utterance; tokenization counts can shift abruptly.\\
-- Corpus datasheets: structured dataset docs for coverage, bias, intended use.\\
-- Sentence boundary ambiguity: period can be abbreviation or EOS.\\
-- Tokenizer mismatch invalidates direct perplexity/model comparison.\\
-- Mixing byte-level and code-point operations causes silent bugs.
+\subsection*{Minimum Edit Distance (Levenshtein)}
+Initialization:
+\[
+D(i,0)=i, \quad D(0,j)=j
+\]
+Recurrence:
+\[
+D(i,j)=\min
+\begin{cases}
+D(i-1,j)+1\\
+D(i,j-1)+1\\
+D(i-1,j-1)+
+\begin{cases}
+0 & x_i=y_j\\
+2 & x_i\neq y_j
+\end{cases}
+\end{cases}
+\]
+Time $O(nm)$, space $O(nm)$ (can reduce to $O(\min(n,m))$).\\
+Backtrace cost $O(n+m)$.\\
+\textbf{Common traps:} substitution cost may be 2 (not 1).
+
+\subsection*{Bigram \& N-gram Models}
+Chain rule:
+\[
+P(w_1^N)=\prod_{i=1}^{N} P(w_i|w_1^{i-1})
+\]
+Bigram assumption:
+\[
+P(w_i|w_1^{i-1}) \approx P(w_i|w_{i-1})
+\]
+MLE:
+\[
+P(w_i|w_{i-1})=\frac{\text{count}(w_{i-1},w_i)}
+{\text{count}(w_{i-1})}
+\]
+Add-one smoothing:
+\[
+\frac{\text{count}(w_{i-1},w_i)+1}
+{\text{count}(w_{i-1})+|V|}
+\]
+Interpolation:
+\[
+P=\lambda_1 P_{\text{bigram}} + \lambda_2 P_{\text{unigram}}
+\]
+\textbf{Common traps:} include start/end symbols; MLE gives zero for unseen events.
+
+\subsection*{Log-space \& Cross-Entropy}
+Log trick: $\log(ab)=\log a + \log b$ (avoid underflow).\\
+Cross-entropy (single example):
+\[
+-\log P(y|x)
+\]
+Maximize likelihood $\Leftrightarrow$ minimize cross-entropy.\\
+\textbf{Common traps:} log does not change $\arg\max$ ranking.
