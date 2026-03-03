@@ -6,7 +6,7 @@ D(i,0)=i,\qquad D(0,j)=j.
 \]
 \[
 \begin{array}{l}
-D(i,j)=\min\{quad D(i-1,j)+1,\\
+D(i,j)=\min\{D(i-1,j)+1,\\
 \quad D(i,j-1)+1,\\
 \quad D(i-1,j-1)+cost}.
 \end{array}
@@ -17,7 +17,7 @@ Weighted form:
 \begin{array}{l}
 D(i,0)=D(i-1,0)+del[x_i],\\
 D(0,j)=D(0,j-1)+ins[y_j],\\
-D(i,j)=\min\{quad D(i-1,j)+del[x_i],\\
+D(i,j)=\min\{D(i-1,j)+del[x_i],\\
 \quad D(i,j-1)+ins[y_j],\\
 \quad D(i-1,j-1)+sub[x_i,y_j]}.
 \end{array}
