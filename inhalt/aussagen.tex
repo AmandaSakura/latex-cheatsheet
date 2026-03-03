@@ -5,10 +5,7 @@ Token (instance): one occurrence in corpus; total count $N$.\\
 Lecture example sentence ``They ... stars'': 14 types, 16 instances (ignore punctuation).\\
 Orthographic vs grammatical word can differ: ``I'm'' is one orthographic token but two words ($I$ + $am$).\\
 Function words (e.g., \textit{the, of}) mostly encode grammar; content words carry core semantics.\\
-Heaps/Herdan law (lecture statement):
-\[
-|V|\approx KN^{\beta},\qquad \beta\approx 0.5.
-\]
+Heaps/Herdan law (lecture statement): $|V|\approx KN^{\beta},\ \beta\approx 0.5$.\\
 Type-token ratio $|V|/N$ decreases as corpus grows.
 
 \subsection*{Language and Token Budget}
@@ -16,7 +13,8 @@ Whitespace tokenization is language-dependent; not universal.\\
 For Chinese/Japanese/Thai, segmentation choices change token count strongly.\\
 Chinese lecture point: words are built from hanzi; each character can correspond to a morpheme.\\
 Chinese segmentation is not uniquely agreed: same utterance can have multiple valid word segmentations.\\
-Practical exam note: same sentence meaning can consume very different token budgets across tokenizers/languages.
+Practical exam note: same sentence meaning can consume very different\\
+token budgets across tokenizers/languages.
 
 \subsection*{Corpora, Coverage, Datasheets}
 Corpus: sampled text collection used to estimate language statistics/model parameters.\\
@@ -29,7 +27,8 @@ Morpheme: minimal meaning-bearing unit in a language.\\
 Examples from slides: ``fox'' = one morpheme; ``cats'' = $cat + {-s}$.\\
 Root vs affix: root carries core meaning; affix adds grammatical/semantic function.\\
 Inflectional morphemes: mostly grammatical (e.g., verb past \texttt{-ed}, noun plural \texttt{-s/-es}).\\
-Derivational morphemes: often change lexical class/meaning (e.g., care $\rightarrow$ careful $\rightarrow$ carefully).\\
+Derivational morphemes: often change lexical class/meaning\\
+(e.g., care $\rightarrow$ careful $\rightarrow$ carefully).\\
 Clitic: syntactically word-like but phonologically reduced and attached (e.g., \texttt{'ve} in \texttt{I've}).
 
 \subsection*{Unicode, Code Points, UTF-8}

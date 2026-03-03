@@ -43,13 +43,20 @@ Two-layer softmax classifier (slide form): $h=g(Wx+b_1)$, $y=\mathrm{softmax}(Uh
 If slide uses Gaussian-prior view: L2 regularization is MAP with Gaussian prior on weights.\\
 Equivalent objective form:
 \[
-\hat\theta=\arg\max_\theta\ \sum_i \log p(y^{(i)}\mid x^{(i)};\theta)-\lambda\|\theta\|_2^2.
+\begin{array}{l}
+\hat\theta=\arg\max_\theta\Big[
+\sum_i \log p(y^{(i)}\mid x^{(i)};\theta)\\
+\qquad -\lambda\|\theta\|_2^2
+\Big].
+\end{array}
 \]
 Interpretation: prior centered at $0$ encourages smaller weights.
 
 \subsection*{Backprop / Computation Graph Mini-Template}
 \[
-\frac{d}{dx}u(v(x))=\frac{du}{dv}\frac{dv}{dx},\qquad
+\frac{d}{dx}u(v(x))=\frac{du}{dv}\frac{dv}{dx}.
+\]
+\[
 \frac{d}{dx}u(v(w(x)))=\frac{du}{dv}\frac{dv}{dw}\frac{dw}{dx}.
 \]
 Derivatives used in lecture:
@@ -95,7 +102,8 @@ Quality/diversity tradeoff: sharper distribution $\Rightarrow$ quality up, diver
 \subsection*{Top-k and Top-p Decoding (L6)}
 Top-$k$: keep only $k$ highest-probability tokens, renormalize, then sample.\\
 When $k=1$, top-$k$ reduces to greedy decoding.\\
-Top-$p$ (nucleus): choose smallest token set $S$ with cumulative probability $\sum_{w\in S}p(w)\ge p$, renormalize on $S$, then sample.\\
+Top-$p$ (nucleus): choose smallest token set $S$ with\\
+cumulative probability $\sum_{w\in S}p(w)\ge p$, renormalize on $S$, then sample.\\
 Why top-$p$: unlike fixed $k$, retained set size adapts to distribution sharpness by context.
 
 \subsection*{Transformer Attention (canonical)}
@@ -105,13 +113,16 @@ q_i=x_iW^Q,\qquad k_j=x_jW^K,\qquad v_j=x_jW^V.
 \]
 Masked scaled dot-product attention:
 \[
-\alpha_{ij}=\mathrm{softmax}\!\left(\frac{q_i\cdot k_j+m_{ij}}{\sqrt{d_k}}\right),
-\qquad
+\begin{array}{l}
+\alpha_{ij}=\mathrm{softmax}\!\left(
+\dfrac{q_i\cdot k_j+m_{ij}}{\sqrt{d_k}}
+\right),\\
 m_{ij}=
 \begin{cases}
 0,&j\le i\\
 -\infty,&j>i
 \end{cases}
+\end{array}
 \]
 \[
 a_i=\sum_{j\le i}\alpha_{ij}v_j.
@@ -136,10 +147,11 @@ LayerNorm:
 \]
 Transformer block (pre-norm residual stream):
 \[
-t_i^1=LN(x_i),\quad
-t_i^2=MHA(t_i^1,\{x_1^1,\ldots,x_N^1\}),
+t_i^1=LN(x_i),\qquad
+X^1=\{x_1^1,\ldots,x_N^1\},
 \]
 \[
+t_i^2=MHA(t_i^1,X^1),\quad
 t_i^3=t_i^2+x_i,\quad
 t_i^4=LN(t_i^3),\quad
 t_i^5=FFN(t_i^4),\quad
@@ -159,7 +171,10 @@ Perplexity caveat: tokenizer-sensitive; compare only under same tokenization.\\
 Safety quick list: hallucination, privacy leakage, toxicity, representation bias.
 
 \subsection*{A2 Repro (exam-speed chain)}
-\textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) D, (e) A.\\
+\textbf{Q1 MCQ key + what each is:}\\
+(a) C: all skip-gram positive pairs ($\pm2$), (b) A: which preprocessing increases feature space.\\
+(c) B: identify sigmoid curve, (d) D: RNN last-state recency bias failure mode.\\
+(e) A: dense vectors do \emph{not} directly solve unseen-word generalization.\\
 \textbf{Q2(a)} SGNS objective:
 \[
 \begin{array}{l}

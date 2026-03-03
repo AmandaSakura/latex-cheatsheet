@@ -68,7 +68,8 @@ If EOS is modeled, terminate with \texttt{</s>} and include EOS counts in traini
 Train set: fit parameters.\\
 Dev set: tune hyperparameters/model choices.\\
 Test set: final one-shot report of generalization.\\
-Lecture warning: training (or repeated tuning) on test set gives artificially high test probability; bad science.\\
+Lecture warning: training (or repeated tuning) on test set gives\\
+artificially high test probability; bad science.\\
 Workflow: train $\rightarrow$ tune on dev $\rightarrow$ freeze model $\rightarrow$ run test once.\\
 Generalization check: lower train PP but higher dev/test PP indicates overfitting.
 
@@ -86,7 +87,8 @@ p_i=P(w_i\mid w_1^{i-1}).
 \[
 PP(W)=2^{H(W)}.
 \]
-L2 intuition slides: perplexity is inverse normalized test probability; minimizing PP is equivalent to maximizing test probability.\\
+L2 intuition slides: perplexity is inverse normalized test probability;\\
+minimizing PP is equivalent to maximizing test probability.\\
 Interpretation: weighted average branching factor (effective number of likely next words).\\
 Comparison rule: only compare PP under same tokenizer/preprocessing/test split.
 
@@ -130,8 +132,10 @@ P(w_i\mid w_{i-2},w_{i-1})=\\
 Backoff principle: when higher-order count is zero, use lower-order model (usually with discounting).
 
 \subsection*{Exercise-Style Quick Checks (Ch2/3)}
-3.2/3.3 style: unsmoothed MLE often gives sharper/higher in-corpus probabilities; smoothing redistributes mass to unseen events.\\
-3.4/3.7 style: \texttt{I am Sam} corpus yields $P(Sam\mid am)=\frac{3}{14}$ (add-1) and $\frac{31}{75}$ (interpolation).\\
+3.2/3.3 style: unsmoothed MLE often gives sharper in-corpus probabilities;\\
+smoothing redistributes mass to unseen events.\\
+3.4/3.7 style: \texttt{I am Sam} corpus yields $P(Sam\mid am)=\frac{3}{14}$ (add-1)\\
+and $\frac{31}{75}$ (interpolation).\\
 3.10/3.11 style: sampling and perplexity computation should use exactly the same LM definition/tokenization.
 
 \subsection*{A1 Repro (L2 core)}

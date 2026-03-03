@@ -14,8 +14,9 @@ n=\sum_i x_i.
 \]
 Log-space decision rule:
 \[
-\hat c=\arg\max_{c\in C}
-\left[\log P(c)+\sum_{i=1}^{|V|}x_i\log\theta_{c,i}\right].
+\hat c=\arg\max_{c\in C}\Big[
+\log P(c)+\sum_{i=1}^{|V|}x_i\log\theta_{c,i}
+\Big].
 \]
 The multinomial coefficient is class-independent, so it drops out in $\arg\max_c$.\\
 MLE and add-$\alpha$ smoothing:
@@ -29,7 +30,8 @@ Unknown words/stopwords in practice: OOV mapping and aggressive stopword removal
 \subsection*{Lexical Semantics Quick Map}
 Lemma = citation form (e.g., \textit{mouse}); wordform = inflected surface form (e.g., \textit{mice}).\\
 One lemma can have multiple senses (polysemy).\\
-Synonymy: near-substitutable senses; similarity: semantically close words; relatedness: event/domain association.\\
+Synonymy: near-substitutable senses; similarity: semantically close words;\\
+relatedness: event/domain association.\\
 Examples: \textit{car/automobile} (near-synonym), \textit{cat/dog} (similar), \textit{coffee/cup} (related).\\
 Principle of contrast: different forms usually carry some meaning/use difference.
 
@@ -49,7 +51,8 @@ Use cosine when vector length/frequency bias is undesirable.
 \subsection*{Window Size and Neighbor Type (L4)}
 Small context window ($C=\pm2$): nearest neighbors are often syntactic/taxonomic.\\
 Large context window ($C=\pm5$): neighbors shift toward topical/semantic field relations.\\
-Lecture example (Hogwarts): small window gives fictional-school neighbors; large window gives Harry-Potter-world terms.
+Lecture example (Hogwarts): small window gives fictional-school neighbors;\\
+large window gives Harry-Potter-world terms.
 
 \subsection*{Analogy by Parallelogram}
 For $a:a^\*::b:b^\*$: $v(b^\*) \approx v(b)-v(a)+v(a^\*)$.\\
@@ -88,7 +91,10 @@ Useful derivatives:
 \]
 
 \subsection*{A1 Repro (exam-speed chain)}
-\textbf{Q1 MCQ key:} (a) C, (b) A, (c) B, (d) C, (e) C.\\
+\textbf{Q1 MCQ key + what each is:}\\
+(a) C: uniform-10-class CE, (b) A: problem type=classification.\\
+(c) B: MED(\textit{seventy},\textit{seventeen}), (d) C: unique bigrams in sentence.\\
+(e) C: why use log-probabilities (numerical stability).\\
 \textbf{Q2(a)} add-one bigram:
 \[
 P(Sam\mid am)=
@@ -107,7 +113,8 @@ P(Sam\mid am)=
 \sum_{w_{1:\ell}}P(w_{1:\ell})=1\ \text{for each fixed }\ell,
 \]
 not a valid global distribution across all lengths.\\
-\textbf{Q4} NB derivation path: Bayes $\rightarrow$ drop class-independent terms $\rightarrow$ log-linear score.\\
+\textbf{Q4} NB derivation path:\\
+Bayes $\rightarrow$ drop class-independent terms $\rightarrow$ log-linear score.\\
 \textbf{Q5} Logistic objective and gradient: same CE and gradient forms as L3.
 
 \subsection*{L4 Pitfalls}

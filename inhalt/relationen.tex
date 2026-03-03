@@ -1,6 +1,7 @@
 \section{L3: Logistic Regression, Optimization, Evaluation}
 \subsection*{Binary Logistic Regression (Compact)}
-\textbf{Setup:} examples $(x^{(i)},y^{(i)})$, feature vector $x=[x_1,\ldots,x_n]$, weights $w=[w_1,\ldots,w_n]$, $y\in\{0,1\}$.\\
+\textbf{Setup:} examples $(x^{(i)},y^{(i)})$, feature vector $x=[x_1,\ldots,x_n]$,\\
+weights $w=[w_1,\ldots,w_n]$, $y\in\{0,1\}$.\\
 Weighted sum: $z=w\cdot x+b=\sum_{j=1}^{n}w_jx_j+b$.\\
 Sigmoid/logistic: $\hat y=\sigma(z)=\dfrac{1}{1+\exp(-z)}=\sigma(w\cdot x+b)$.\\
 $p(y=1\mid x)=\hat y,\quad p(y=0\mid x)=1-\hat y=\sigma(-(w\cdot x+b))$.\\
@@ -33,7 +34,8 @@ Default threshold: predict class 1 if $p(y=1\mid x)\ge\tau$ (often $\tau=0.5$).\
 Tune $\tau$ on dev set when class imbalance or asymmetric cost exists.
 
 \subsection*{Evaluation Metrics}
-$\text{Accuracy}=\dfrac{TP+TN}{TP+TN+FP+FN}$, $\text{Precision}=\dfrac{TP}{TP+FP}$, $\text{Recall}=\dfrac{TP}{TP+FN}$, $F_1=\dfrac{2PR}{P+R}$.\\
+$\text{Accuracy}=\dfrac{TP+TN}{TP+TN+FP+FN}$, $\text{Precision}=\dfrac{TP}{TP+FP}$.\\
+$\text{Recall}=\dfrac{TP}{TP+FN}$, $F_1=\dfrac{2PR}{P+R}$.\\
 Macro: average per-class metrics equally; Micro: aggregate counts first, then compute.\\
 Macro-$F_1$ is usually more informative than accuracy under imbalance.
 
