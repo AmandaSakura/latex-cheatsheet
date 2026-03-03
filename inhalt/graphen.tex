@@ -2,35 +2,32 @@
 \subsection*{Feedforward Neural LM / Classifier}
 Neural unit:
 \[
-z=w\cdot x+b,
-\qquad
- a=f(z).
+z=w\cdot x+b,\qquad a=f(z).
 \]
 Activation choices:
 \[
-\sigma(z)=\frac{1}{1+e^{-z}},
-\]
-\[
-\tanh(z)=\frac{e^z-e^{-z}}{e^z+e^{-z}},
-\]
-\[
+\sigma(z)=\frac{1}{1+e^{-z}},\qquad
+\tanh(z)=\frac{e^z-e^{-z}}{e^z+e^{-z}},\qquad
 \mathrm{ReLU}(z)=\max(0,z).
+\]
+XOR lesson: one linear unit cannot represent XOR; need hidden layer/nonlinearity.\\
+Embedding matrix view (L5): token id $t$ maps to embedding $E_t$ from matrix $E\in\mathbb R^{|V|\times d}$.\\
+Variable-length text classification commonly pools embeddings:
+\[
+h_{doc}=\mathrm{pool}(e_{w_1},\ldots,e_{w_T})\ \ (\text{mean/max}).
 \]
 Feedforward LM skeleton:
 \[
 x_t=[e_{w_{t-n+1}};\ldots;e_{w_{t-1}}],
+\quad
+h_t=g(Wx_t+b_1),
 \]
 \[
-h_t=g(Wx_t+b_1).
+y_t=\mathrm{softmax}(Uh_t+b_2),\qquad
+P(w_t\mid w_{t-n+1:t-1})=y_t[w_t],
 \]
 \[
-y_t=\mathrm{softmax}(Uh_t+b_2).
-\]
-\[
-P(w_t\mid w_{<t})=y_t[w_t].
-\]
-\[
-L_{CE}(t)=-\log y_t[w_{t+1}].
+L_{CE}(t)=-\log y_t[w_t].
 \]
 
 \subsection*{L5 Multinomial/Softmax Regression}
@@ -39,30 +36,25 @@ Input $x\in\mathbb R^d$, output class-probability vector $y\in\mathbb R^{|C|}$:
 \[
 y=\mathrm{softmax}(Wx+b),\qquad y_c=p(y=c\mid x).
 \]
-Multiclass probability form: $p(y=c\mid x)=\mathrm{softmax}(Wx+b)_c$.\\
 Multiclass CE/NLL: $L=-\log p(y\mid x)$; binary logistic is the $|C|=2$ special case.\\
 Two-layer softmax classifier (slide form): $h=g(Wx+b_1)$, $y=\mathrm{softmax}(Uh+b_2)$.
 
 \subsection*{L5 Optional Regularization/Prior}
-If slide includes Gaussian prior view: L2 regularization is MAP with Gaussian prior on weights.\\
+If slide uses Gaussian-prior view: L2 regularization is MAP with Gaussian prior on weights.\\
 Equivalent objective form:
 \[
 \hat\theta=\arg\max_\theta\ \sum_i \log p(y^{(i)}\mid x^{(i)};\theta)-\lambda\|\theta\|_2^2.
 \]
-Interpretation: Gaussian prior centered at $0$ encourages smaller weights.
+Interpretation: prior centered at $0$ encourages smaller weights.
 
-\subsection*{Backprop / Chain Rule Mini-Template}
+\subsection*{Backprop / Computation Graph Mini-Template}
 \[
-\frac{d}{dx}u(v(x))=\frac{du}{dv}\frac{dv}{dx}.
-\]
-\[
+\frac{d}{dx}u(v(x))=\frac{du}{dv}\frac{dv}{dx},\qquad
 \frac{d}{dx}u(v(w(x)))=\frac{du}{dv}\frac{dv}{dw}\frac{dw}{dx}.
 \]
 Derivatives used in lecture:
 \[
-\frac{d\sigma(z)}{dz}=\sigma(z)(1-\sigma(z)),
-\]
-\[
+\frac{d\sigma(z)}{dz}=\sigma(z)(1-\sigma(z)),\qquad
 \frac{d\tanh(z)}{dz}=1-\tanh^2(z),
 \]
 \[
@@ -76,12 +68,14 @@ SGD update:
 \[
 \theta\leftarrow\theta-\eta\nabla_\theta L.
 \]
+Implementation note: computation graph + backward pass gives gradients by chain rule.
 
-\subsection*{Decoder-only LLM and Decoding}
+\subsection*{Decoder-only LLM, Prompting, Decoding}
 Autoregressive factorization:
 \[
 P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_{<i}).
 \]
+Prompting: task is provided as text prefix; system prompt adds global behavior constraints.\\
 Greedy decoding:
 \[
 \hat w_t=\arg\max_{w\in V}P(w\mid w_{<t}).
@@ -92,13 +86,11 @@ y=\mathrm{softmax}(u).
 \]
 Temperature sampling:
 \[
-\mathrm{softmax}(u/\tau).
-\]
-\[
+\mathrm{softmax}(u/\tau),\qquad
 \tau\uparrow \Rightarrow \text{flatter distribution}.
 \]
-Random sampling caveat from lecture: probability tails contain many low-probability odd words; accumulated tail mass still causes bad samples.\\
-Quality/diversity tradeoff: emphasize high-probability words $\Rightarrow$ quality up, diversity down; flatter sampling does the reverse.
+Random sampling caveat: tail words are individually low-probability but have large total mass.\\
+Quality/diversity tradeoff: sharper distribution $\Rightarrow$ quality up, diversity down.
 
 \subsection*{Top-k and Top-p Decoding (L6)}
 Top-$k$: keep only $k$ highest-probability tokens, renormalize, then sample.\\
@@ -109,42 +101,34 @@ Why top-$p$: unlike fixed $k$, retained set size adapts to distribution sharpnes
 \subsection*{Transformer Attention (canonical)}
 Single-head projections:
 \[
-q_i=x_iW^Q,\qquad k_j=x_jW^K.
+q_i=x_iW^Q,\qquad k_j=x_jW^K,\qquad v_j=x_jW^V.
 \]
+Masked scaled dot-product attention:
 \[
-v_j=x_jW^V.
-\]
-Scaled dot-product attention:
-\[
-score(x_i,x_j)=\frac{q_i\cdot k_j}{\sqrt{d_k}},
-\]
-\[
-\alpha_{ij}=\mathrm{softmax}(score(x_i,x_j)),
+\alpha_{ij}=\mathrm{softmax}\!\left(\frac{q_i\cdot k_j+m_{ij}}{\sqrt{d_k}}\right),
+\qquad
+m_{ij}=
+\begin{cases}
+0,&j\le i\\
+-\infty,&j>i
+\end{cases}
 \]
 \[
 a_i=\sum_{j\le i}\alpha_{ij}v_j.
 \]
 Multi-head (head index $c=1,\ldots,h$):
 \[
-q_i^c=x_iW^{Q_c}.
+q_i^c=x_iW^{Q_c},\quad
+k_j^c=x_jW^{K_c},\quad
+v_j^c=x_jW^{V_c},
 \]
 \[
-k_j^c=x_jW^{K_c}.
-\]
-\[
-v_j^c=x_jW^{V_c}.
-\]
-\[
-head_i^c=\sum_{j\le i}\alpha_{ij}^c v_j^c,
-\]
-\[
+head_i^c=\sum_{j\le i}\alpha_{ij}^c v_j^c,\qquad
 a_i=(head_i^1\oplus\cdots\oplus head_i^h)W^O.
 \]
-LayerNorm (Eq. 9.21--9.24 style):
+LayerNorm:
 \[
-\mu=\frac{1}{d}\sum_{r=1}^{d}x_r,
-\]
-\[
+\mu=\frac{1}{d}\sum_{r=1}^{d}x_r,\qquad
 \sigma=\sqrt{\frac{1}{d}\sum_{r=1}^{d}(x_r-\mu)^2},
 \]
 \[
@@ -152,19 +136,22 @@ LayerNorm (Eq. 9.21--9.24 style):
 \]
 Transformer block (pre-norm residual stream):
 \[
-t_i^1=LN(x_i).
+t_i^1=LN(x_i),\quad
+t_i^2=MHA(t_i^1,\{x_1^1,\ldots,x_N^1\}),
 \]
 \[
-t_i^2=MHA(t_i^1,\{x_1^1,\ldots,x_N^1\}).
-\]
-\[
-t_i^3=t_i^2+x_i,\qquad t_i^4=LN(t_i^3).
-\]
-\[
-t_i^5=FFN(t_i^4),\qquad h_i=t_i^5+t_i^3.
+t_i^3=t_i^2+x_i,\quad
+t_i^4=LN(t_i^3),\quad
+t_i^5=FFN(t_i^4),\quad
+h_i=t_i^5+t_i^3.
 \]
 
-\subsection*{Post-training Modes and Risks}
+\subsection*{Training/Adaptation Modes and Risks}
+Teacher forcing for LM training: at step $t$, model conditions on gold prefix $w_{<t}$.\\
+Equivalent LM objective:
+\[
+L_{CE}=-\sum_t \log P(w_t\mid w_{<t}).
+\]
 Continued pretraining: continue LM objective on domain corpus.\\
 PEFT: tune small adapter/low-rank parameter subset.\\
 SFT: supervised instruction-response fine-tuning.\\
@@ -178,7 +165,7 @@ Safety quick list: hallucination, privacy leakage, toxicity, representation bias
 \begin{array}{l}
 J(\theta)=
 \sum_{(w,c)\in D}\log\sigma(u_c\cdot v_w)\\
-\quad +k\sum_{(w,\cdot)\in D}\mathbb E_{c'\sim P_n}[g(w,c')].
+\quad +k\sum_{(w,\cdot)\in D}\mathbb E_{c'\sim P_n}[g(w,c')],
 \end{array}
 \]
 \[
@@ -195,26 +182,23 @@ J(\theta)=
 \]
 \textbf{Q2(b)}
 \[
-\frac{d}{d\alpha}\log\sigma(\alpha)=\frac{1}{1+e^{\alpha}}.
+\frac{d}{d\alpha}\log\sigma(\alpha)=\frac{1}{1+e^{\alpha}}=\sigma(-\alpha).
 \]
-\[
-\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha).
-\]
-\textbf{Q2(c)} for one pair ($\alpha=u_0\cdot v_1$):
+\textbf{Q2(c)} for one pair ($\alpha=u_a\cdot v_b$):
 \[
 \alpha^*=\log\frac{A}{B}.
 \]
-\textbf{Q2(d)} with negative sampling:
+\textbf{Q2(d)} with unigram negative sampling:
 \[
-\alpha^*=PMI(1,0)-\log k.
+\alpha^*=PMI(b,a)-\log k.
 \]
 \textbf{Q2(e)} choose $0<\beta<1$ in
 \[
-P_n(w)\propto P_{unigram}(w)^\beta.
+P_n(w)\propto P_{unigram}(w)^\beta,
 \]
 common choice $\beta=0.75$.
 
 \subsection*{L5/L6 Pitfalls}
-- Most backprop bugs are wrong shape or wrong chain path.\\
-- Wrong causal mask leaks future tokens and breaks autoregressive eval.\\
+- [YiCuoDian] Most backprop bugs are wrong shape or wrong chain path.\\
+- Wrong causal mask leaks future tokens and invalidates autoregressive evaluation.\\
 - Always report tokenizer and decoding setup with LM metrics.

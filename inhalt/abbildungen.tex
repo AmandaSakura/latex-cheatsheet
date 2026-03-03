@@ -2,17 +2,14 @@
 \subsection*{Multinomial Naive Bayes}
 MAP classifier:
 \[
-\hat c_{MAP}=\arg\max_{c\in C}P(c\mid x).
-\]
-\[
-\hat c_{MAP}=\arg\max_{c\in C}P(c)P(x\mid c).
+\hat c_{MAP}=\arg\max_{c\in C}P(c\mid x)
+=\arg\max_{c\in C}P(c)P(x\mid c).
 \]
 Multinomial likelihood for bag-of-words counts $x_i$:
 \[
 P(x\mid c)=\frac{n!}{\prod_{i=1}^{|V|}x_i!}
 \prod_{i=1}^{|V|}\theta_{c,i}^{x_i},
-\]
-\[
+\qquad
 n=\sum_i x_i.
 \]
 Log-space decision rule:
@@ -20,12 +17,21 @@ Log-space decision rule:
 \hat c=\arg\max_{c\in C}
 \left[\log P(c)+\sum_{i=1}^{|V|}x_i\log\theta_{c,i}\right].
 \]
+The multinomial coefficient is class-independent, so it drops out in $\arg\max_c$.\\
 MLE and add-$\alpha$ smoothing:
 \[
 \theta_{c,i}^{MLE}=\frac{n_{i,c}}{n_c},
 \qquad
 \theta_{c,i}=\frac{n_{i,c}+\alpha}{n_c+\alpha|V|}.
 \]
+Unknown words/stopwords in practice: OOV mapping and aggressive stopword removal change NB scores.
+
+\subsection*{Lexical Semantics Quick Map}
+Lemma = citation form (e.g., \textit{mouse}); wordform = inflected surface form (e.g., \textit{mice}).\\
+One lemma can have multiple senses (polysemy).\\
+Synonymy: near-substitutable senses; similarity: semantically close words; relatedness: event/domain association.\\
+Examples: \textit{car/automobile} (near-synonym), \textit{cat/dog} (similar), \textit{coffee/cup} (related).\\
+Principle of contrast: different forms usually carry some meaning/use difference.
 
 \subsection*{Word Vectors and Similarity}
 Dot product:
@@ -48,24 +54,23 @@ Lecture example (Hogwarts): small window gives fictional-school neighbors; large
 \subsection*{Analogy by Parallelogram}
 For $a:a^\*::b:b^\*$: $v(b^\*) \approx v(b)-v(a)+v(a^\*)$.\\
 Canonical examples: $v(king)-v(man)+v(woman)\approx v(queen)$;\\
-$v(Paris)-v(France)+v(Italy)\approx v(Rome)$.
-- Caveat (L4 slide): not universal; works better for some relation types than others.\\
-- Caveat (L4 slide): performance depends on frequent words and stable semantics.
+$v(Paris)-v(France)+v(Italy)\approx v(Rome)$.\\
+- Caveat: not universal; works better for some relation types than others.\\
+- Caveat: performance depends on frequent words and stable semantics.
 
 \subsection*{Embedding Bias Notes}
-Slides emphasize: embeddings reflect statistical regularities and cultural bias in training data.\\
+Embeddings reflect statistical regularities and cultural bias in training data.\\
 Example template: father:doctor::mother:$x$ may return stereotyped completions.\\
 Downstream retrieval/ranking/classification systems can inherit these biases if embeddings are used directly.
 
 \subsection*{SGNS Core (lecture form)}
 For target word $w$ and context word $c$:
 \[
-P(+\mid w,c)=\sigma(u_c\cdot v_w).
-\]
-\[
+P(+\mid w,c)=\sigma(u_c\cdot v_w),
+\qquad
 P(-\mid w,c)=\sigma(-u_c\cdot v_w).
 \]
-- Two sets of embeddings in training: word vectors $v_w$ and context vectors $u_c$.\\
+- Two sets of embeddings in training: target vectors $v_w$ and context vectors $u_c$.\\
 - Final representation in practice: use $v_w$, or sometimes $v_w+u_w$.
 One positive + $k$ negatives objective:
 \[
@@ -78,9 +83,7 @@ L_{CE}= -\Big[
 \]
 Useful derivatives:
 \[
-\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha).
-\]
-\[
+\frac{d}{d\alpha}\log\sigma(\alpha)=\sigma(-\alpha),\qquad
 \frac{d}{d\alpha}\log\sigma(-\alpha)=-\sigma(\alpha).
 \]
 
@@ -90,9 +93,7 @@ Useful derivatives:
 \[
 P(Sam\mid am)=
 \frac{C(am,Sam)+1}{C(am)+|V|}
-\]
-\[
-P(Sam\mid am)=\frac{2+1}{3+11}=\frac{3}{14}.
+=\frac{2+1}{3+11}=\frac{3}{14}.
 \]
 \textbf{Q2(b)} interpolation ($\lambda_1=\lambda_2=\frac{1}{2}$):
 \[
@@ -110,6 +111,7 @@ not a valid global distribution across all lengths.\\
 \textbf{Q5} Logistic objective and gradient: same CE and gradient forms as L3.
 
 \subsection*{L4 Pitfalls}
-- Compute NB in log space to avoid underflow.\\
+- [YiCuoDian] Compute NB in log space to avoid underflow.\\
 - Without smoothing, one unseen word can zero a class score.\\
-- Dot product alone can over-favor frequent words; cosine is safer.
+- Dot product alone can over-favor frequent words; cosine is safer.\\
+- Keep preprocessing/tokenization consistent when comparing vector models.

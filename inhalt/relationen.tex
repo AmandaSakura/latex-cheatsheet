@@ -23,11 +23,19 @@ For one sample $(x,y)$:
 \frac{\partial L_{CE}}{\partial b}=\hat y-y.
 \]
 Vector gradient: $\nabla_wL=(\hat y-y)x$.\\
-SGD updates: $w\leftarrow w-\eta\nabla_wL$, $b\leftarrow b-\eta\dfrac{\partial L}{\partial b}$, equivalently $\theta_{t+1}=\theta_t-\eta\nabla_\theta L$.
+Gradient descent update: $\theta_{t+1}=\theta_t-\eta\nabla_\theta L$.\\
+SGD (single/minibatch) uses stochastic estimate of $\nabla_\theta L$:
+$w\leftarrow w-\eta\nabla_wL$, $b\leftarrow b-\eta\dfrac{\partial L}{\partial b}$.
+
+\subsection*{Confusion Matrix + Threshold}
+Confusion matrix counts: $TP,FP,FN,TN$.\\
+Default threshold: predict class 1 if $p(y=1\mid x)\ge\tau$ (often $\tau=0.5$).\\
+Tune $\tau$ on dev set when class imbalance or asymmetric cost exists.
 
 \subsection*{Evaluation Metrics}
 $\text{Accuracy}=\dfrac{TP+TN}{TP+TN+FP+FN}$, $\text{Precision}=\dfrac{TP}{TP+FP}$, $\text{Recall}=\dfrac{TP}{TP+FN}$, $F_1=\dfrac{2PR}{P+R}$.\\
-Macro: average per-class metrics equally; Micro: aggregate counts first, then compute.
+Macro: average per-class metrics equally; Micro: aggregate counts first, then compute.\\
+Macro-$F_1$ is usually more informative than accuracy under imbalance.
 
 \subsection*{A1 Repro (L3 Core)}
 \[
@@ -43,6 +51,7 @@ Macro: average per-class metrics equally; Micro: aggregate counts first, then co
 \left(\sigma(\theta\cdot\phi(x^{(i)}))-y^{(i)}\right)\phi(x^{(i)}).
 \]
 \subsection*{L3 Pitfalls}
-- Accuracy can be misleading under class imbalance; report precision/recall/$F_1$.\\
+- [YiCuoDian] Accuracy can be misleading under class imbalance; report precision/recall/$F_1$.\\
 - Too-large learning rate diverges; too-small learning rate stalls.\\
+- Threshold fixed at $0.5$ is not always optimal for deployment objective.\\
 - Feature design/interactions often dominate final performance.

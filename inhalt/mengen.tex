@@ -1,5 +1,5 @@
 \section{L2: Min Edit Distance, N-grams, Perplexity, Smoothing}
-\subsection*{Min Edit Distance (Levenshtein)}
+\subsection*{Min Edit Distance (Levenshtein / Minimum Edit Distance)}
 Given strings $X=x_1\ldots x_M$, $Y=y_1\ldots y_N$:
 \[
 D(i,0)=i,\qquad D(0,j)=j.
@@ -29,10 +29,20 @@ D(i,j)=\min\{\\
 Backtrace: store operation pointer (DEL/INS/SUB-MATCH) per cell.\\
 Complexity: time $O(MN)$; memory $O(MN)$ or $O(\min\{M,N\})$ with rolling rows.
 
+\subsection*{DP + Backtrace Mini-Template}
+Dynamic programming fill order: row 0/col 0 first, then left-to-right top-to-bottom.\\
+Cell transition compares \texttt{DEL/INS/SUB(or MATCH)} candidates; keep minimum cost and pointer.\\
+Alignment reconstruction: start at $(M,N)$ and follow pointers to $(0,0)$; reverse operations.\\
+Weighted edit distance uses confusion-informed costs (keyboard typo/ASR confusions).
+
 \subsection*{N-gram Language Modeling}
 Chain rule:
 \[
 P(w_1^n)=\prod_{i=1}^{n}P(w_i\mid w_1^{i-1}).
+\]
+Markov assumption (order $N-1$):
+\[
+P(w_i\mid w_1^{i-1})\approx P(w_i\mid w_{i-(N-1)}^{i-1}).
 \]
 N-gram approximation:
 \[
@@ -52,13 +62,15 @@ P(w_1\ldots w_n)=\prod_{i=1}^{n}P(w_i\mid w_{i-1}).
 \[
 w_0=\langle s\rangle.
 \]
+If EOS is modeled, terminate with \texttt{</s>} and include EOS counts in training.
 
 \subsection*{Train/Dev/Test Protocol (L2)}
 Train set: fit parameters.\\
 Dev set: tune hyperparameters/model choices.\\
 Test set: final one-shot report of generalization.\\
 Lecture warning: training (or repeated tuning) on test set gives artificially high test probability; bad science.\\
-Workflow: train $\rightarrow$ tune on dev $\rightarrow$ freeze model $\rightarrow$ run test once.
+Workflow: train $\rightarrow$ tune on dev $\rightarrow$ freeze model $\rightarrow$ run test once.\\
+Generalization check: lower train PP but higher dev/test PP indicates overfitting.
 
 \subsection*{Perplexity (textbook canonical)}
 For test sequence $W=w_1\ldots w_N$:
@@ -75,14 +87,15 @@ p_i=P(w_i\mid w_1^{i-1}).
 PP(W)=2^{H(W)}.
 \]
 L2 intuition slides: perplexity is inverse normalized test probability; minimizing PP is equivalent to maximizing test probability.\\
-Interpretation: weighted average branching factor (effective number of likely next words).
+Interpretation: weighted average branching factor (effective number of likely next words).\\
+Comparison rule: only compare PP under same tokenizer/preprocessing/test split.
 
 \subsection*{Shannon Visualization (1948)}
 Shannon game intuition: a good LM predicts the actually occurring next word with higher probability.\\
 Bigram sampling procedure (slide style):\\
 1. Sample first word $w$ from $p(w\mid\langle s\rangle)$.\\
 2. Repeatedly sample next token $x\sim p(x\mid w)$.\\
-3. Set $w\leftarrow x$ and continue until $\langle/ s\rangle$.\\
+3. Set $w\leftarrow x$ and continue until \texttt{</s>}.\\
 4. Concatenate sampled words to form generated sentence.
 
 Lower PP is better only under same tokenizer, preprocessing, and test split.
@@ -93,10 +106,15 @@ Laplace (add-1):
 P_{add1}(w_i\mid w_{i-1})=
 \frac{C(w_{i-1},w_i)+1}{C(w_{i-1})+|V|}.
 \]
-Add-$k$ ($0<k<1$):
+Add-$k$ smoothing (\texttt{add-k}, $0<k<1$):
 \[
 P_{addk}(w_i\mid w_{i-1})=
 \frac{C(w_{i-1},w_i)+k}{C(w_{i-1})+k|V|}.
+\]
+Trigram add-one (exercise form):
+\[
+P_{add1}(w_3\mid w_1,w_2)=
+\frac{C(w_1,w_2,w_3)+1}{C(w_1,w_2)+|V|}.
 \]
 Linear interpolation (trigram):
 \[
@@ -110,6 +128,11 @@ P(w_i\mid w_{i-2},w_{i-1})=\\
 \lambda_1+\lambda_2+\lambda_3=1.
 \]
 Backoff principle: when higher-order count is zero, use lower-order model (usually with discounting).
+
+\subsection*{Exercise-Style Quick Checks (Ch2/3)}
+3.2/3.3 style: unsmoothed MLE often gives sharper/higher in-corpus probabilities; smoothing redistributes mass to unseen events.\\
+3.4/3.7 style: \texttt{I am Sam} corpus yields $P(Sam\mid am)=\frac{3}{14}$ (add-1) and $\frac{31}{75}$ (interpolation).\\
+3.10/3.11 style: sampling and perplexity computation should use exactly the same LM definition/tokenization.
 
 \subsection*{A1 Repro (L2 core)}
 Q2(a) add-one bigram:
@@ -127,6 +150,7 @@ Q3 no EOS: for fixed length $\ell$,
 but across all lengths it is not normalizable.
 
 \subsection*{L2 Pitfalls}
-- Unsmoothed model assigns zero probability to unseen n-grams.\\
-- Add-1 is often too aggressive for large vocabularies.\\
-- Tune interpolation weights on held-out data, not test set.
+- [YiCuoDian] Unsmoothed model assigns zero probability to unseen n-grams.\\
+- Add-1 is often too aggressive for large vocabularies; add-$k$/interpolation is often stabler.\\
+- Tune interpolation weights on held-out dev data, not test set.\\
+- Always include/exclude \texttt{</s>} consistently across training and evaluation.
