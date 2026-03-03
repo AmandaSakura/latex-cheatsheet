@@ -109,7 +109,10 @@ Why top-$p$: unlike fixed $k$, retained set size adapts to distribution sharpnes
 \subsection*{Transformer Attention (canonical)}
 Single-head projections:
 \[
-q_i=x_iW^Q,\qquad k_j=x_jW^K,\qquad v_j=x_jW^V.
+q_i=x_iW^Q,\qquad k_j=x_jW^K,
+\]
+\[
+v_j=x_jW^V.
 \]
 Masked scaled dot-product attention:
 \[
@@ -134,28 +137,31 @@ k_j^c=x_jW^{K_c},\quad
 v_j^c=x_jW^{V_c},
 \]
 \[
-head_i^c=\sum_{j\le i}\alpha_{ij}^c v_j^c,\qquad
+\begin{array}{l}
+head_i^c=\sum_{j\le i}\alpha_{ij}^c v_j^c,\\
 a_i=(head_i^1\oplus\cdots\oplus head_i^h)W^O.
+\end{array}
 \]
 LayerNorm:
 \[
-\mu=\frac{1}{d}\sum_{r=1}^{d}x_r,\qquad
-\sigma=\sqrt{\frac{1}{d}\sum_{r=1}^{d}(x_r-\mu)^2},
+\mu=\frac{1}{d}\sum_{r=1}^{d}x_r.
+\]
+\[
+\sigma=\sqrt{\frac{1}{d}\sum_{r=1}^{d}(x_r-\mu)^2}.
 \]
 \[
 \mathrm{LayerNorm}(x)=\gamma\frac{x-\mu}{\sigma}+\beta.
 \]
 Transformer block (pre-norm residual stream):
 \[
-t_i^1=LN(x_i),\qquad
-X^1=\{x_1^1,\ldots,x_N^1\},
+X^1=\{x_1^1,\ldots,x_N^1\}.
 \]
 \[
-t_i^2=MHA(t_i^1,X^1),\quad
-t_i^3=t_i^2+x_i,\\
-t_i^4=LN(t_i^3),\quad
-t_i^5=FFN(t_i^4),\quad
-h_i=t_i^5+t_i^3.
+\begin{array}{l}
+t_i^1=LN(x_i),\quad t_i^2=MHA(t_i^1,X^1),\\
+t_i^3=t_i^2+x_i,\quad t_i^4=LN(t_i^3),\\
+t_i^5=FFN(t_i^4),\quad h_i=t_i^5+t_i^3.
+\end{array}
 \]
 
 \subsection*{Training/Adaptation Modes and Risks}
